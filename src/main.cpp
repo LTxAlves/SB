@@ -17,6 +17,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cctype>
 
 #include "funcoes.h"
 #include "instrucao.h"

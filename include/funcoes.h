@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <map>
 
 #include "instrucao.h"
 #include "diretiva.h"
@@ -12,6 +13,8 @@ using std::string;
 using std::vector;
 
 using std::fstream;
+
+using std::map;
 
 const char SPACE = ' ';
 const char TAB = '\t';
@@ -30,18 +33,18 @@ bool acabaCom(string const &stringOrigem, string const &final);
  * Inicializa vetor com instruções de pseudo assembly
  * @returns vetor ordenado de instruções
  * */
-vector<Instrucao> inicializaInstrucoes();
+map<string, Instrucao> inicializaInstrucoes();
 
 /**
  * Inicializa vetor com diretivas de pseudo assembly
  * @returns vetor ordenado de diretivas
  * */
-vector<Diretiva> inicializaDiretivas();
+map<string, Diretiva> inicializaDiretivas();
 
 /**
  * Retorna uma linha do arquivo de entrada, parando em CR, LF ou CRLF
  * @param arquivo arquivo de entrada
- * @returns
+ * @returns linha lida do arquivo
  * */
 string getLineModificado(fstream& arquivo);
 
@@ -111,3 +114,26 @@ void procuraFimLinha(fstream& arquivo);
  * @returns vetor de substrings da linha (ignorando comentários)
  * */
 vector<string> substrings(string linha);
+
+/**
+ * Retorna a string com caracteres em letras maiúsculas
+ * @param str string para transformar
+ * @returns string de entrada transformada em letras maiúsculas
+ * */
+string toupperStr(string str);
+
+/**
+ * Verifica se a string passada como argumento é uma diretiva
+ * @param diretivas vetor de diretivas
+ * @param str string a buscar
+ * @returns booleano indicando se é uma diretiva
+ * */
+bool eDiretiva(string str);
+
+/**
+ * Verifica se a string passada como argumento é uma instrução
+ * @param instrucoes vetor de intrucoes
+ * @param str string a buscar
+ * @returns booleano indicando se é uma diretiva
+ * */
+bool eInstrucao(string str);

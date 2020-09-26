@@ -8,12 +8,9 @@ using std::find;
 
 using std::toupper;
 
-/**
- * Checa se uma string acaba com uma substring
- * @param stingOrigem string onde buscar
- * @param final substring a ser buscada no final
- * @returns true se stringOrigem acaba com final, falso caso contrário
- * */
+static const vector<string> INST_VEC = {"ADD", "SUB", "MULT", "DIV", "JMP", "JMPN", "JMPP", "JMPZ", "COPY", "LOAD", "STORE", "INPUT", "OUTPUT", "STOP"};
+static const vector<string> DIR_VEC = {"SECTION", "SPACE", "CONST", "EQU", "IF", "MACRO", "ENDMACRO"};
+
 bool acabaCom(string const &stringOrigem, string const &final) {
 
     if(stringOrigem.length() >= final.length()) {
@@ -23,7 +20,7 @@ bool acabaCom(string const &stringOrigem, string const &final) {
     }
 }
 
-vector<Instrucao>  inicializaInstrucoes() {
+map<string, Instrucao>  inicializaInstrucoes() {
 
     vector<Instrucao> instrucoes;
 
@@ -44,10 +41,15 @@ vector<Instrucao>  inicializaInstrucoes() {
 
     sort(instrucoes.begin(), instrucoes.end());
 
-    return instrucoes;
+    map<string, Instrucao> mapInst;
+    for(Instrucao inst : instrucoes) {
+        mapInst[inst.getMnemonico()] = inst;
+    }
+
+    return mapInst;
 }
 
-vector<Diretiva> inicializaDiretivas() {
+map< string, Diretiva> inicializaDiretivas() {
 
     vector<Diretiva> diretivas;
 
@@ -61,7 +63,13 @@ vector<Diretiva> inicializaDiretivas() {
 
     sort(diretivas.begin(), diretivas.end());
 
-    return diretivas;
+    map<string, Diretiva> mapDir;
+
+    for(Diretiva dir : diretivas) {
+        mapDir[dir.getMnemonico()] = dir;
+    }
+
+    return mapDir;
 }
 
 string getLineModificado(fstream& arquivo) {
@@ -161,7 +169,7 @@ string getLabel(fstream& arquivo) {
 
     c = arquivo.get();
 
-    while ( !arquivo.bad() && !arquivo.eof() && c != ':' ){
+    while ( !arquivo.bad() && !arquivo.eof() && c != ':' ) {
         c = toupper(c);
 
         if( !(c >= 'A' && c <= 'Z') && c != '_' && !(c >= '0' && c <= '9') && c != SPACE && c != TAB ) {
@@ -169,7 +177,7 @@ string getLabel(fstream& arquivo) {
         }
 
         //se primeira vez encontrando espaço/tab, flag vira verdade
-        if(!encontrouEspaco && (c == SPACE || c == TAB)){
+        if(!encontrouEspaco && (c == SPACE || c == TAB)) {
             encontrouEspaco = true;
         }
         
@@ -184,7 +192,7 @@ string getLabel(fstream& arquivo) {
         c = arquivo.get();
     }
     
-    if(!arquivo.bad() && !arquivo.eof()){
+    if(!arquivo.bad() && !arquivo.eof()) {
         arquivo.putback(c);
     }
 
@@ -235,18 +243,53 @@ vector<string> substrings(string linha) {
                 substrings.push_back(umaString);
             }
             return substrings;
-        }
-
-        if(c == SPACE || c == TAB){
+        } else if(c == SPACE || c == TAB) {
             if(umaString.compare("") != 0) {
                 substrings.push_back(umaString);
             }
             umaString.clear();
-        }
-        else {
+        } else if(c == ':' && umaString.compare("") != 0) {
+                //adiciona : junto à última substring
+                substrings.back() += c;
+        } else {
             umaString += toupper(c);
         }
     }
 
+    if(umaString.compare("") != 0) {
+        substrings.push_back(umaString);
+    }
+
     return substrings;
+}
+
+string toupperStr(string str) {
+
+    string maiusculas;
+
+    for(auto it = str.begin(); it != str.end(); it++) {
+        maiusculas += toupper(*it);
+    }
+
+    return maiusculas;
+}
+
+bool eDiretiva(string str) {
+
+    for(auto it = DIR_VEC.begin(); it != DIR_VEC.end(); it++) {
+        if(str.compare(*it) == 0)
+            return true;
+    }
+
+    return 0;
+}
+
+bool eInstrucao(string str) {
+
+    for(auto it = INST_VEC.begin(); it != INST_VEC.end(); it++) {
+        if(str.compare(*it) == 0)
+            return true;
+    }
+
+    return 0;
 }

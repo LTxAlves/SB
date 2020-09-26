@@ -25,3 +25,11 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada);
  * @returns -1 se erro, 0 caso contrário
  * */
 int mapeiaEqus(fstream& arquivoEntrada);
+
+/**
+ * Geração do arquivo .pre em si
+ * @param arquivoEntrada arquivo em pseudo assembly de entrada
+ * @param arquivoSaida arquivo de saída
+ * @returns -1 se erro, 0 caso contrário
+ * */
+int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida);

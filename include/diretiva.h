@@ -20,7 +20,7 @@ class Diretiva {
         int getTam();
 
         bool operator<(const Diretiva&);
-        friend ostream& operator<<(ostream& os, const Diretiva& dir){
+        friend ostream& operator<<(ostream& os, const Diretiva& dir) {
 
             int w = 10;
 
