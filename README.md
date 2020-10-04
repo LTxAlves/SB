@@ -4,6 +4,7 @@
 - [Trabalho 1 - Software Básico](#trabalho-1---software-básico)
   - [Índice](#índice)
   - [Autor](#autor)
+  - [Escolha de projeto](#escolha-de-projeto)
   - [Começando](#começando)
     - [Pré-requisitos](#pré-requisitos)
     - [Instalando](#instalando)
@@ -17,6 +18,10 @@
 ## Autor
 
 * **Leonardo Alves** - *16/0012007* - [LTxAlves](https://github.com/LTxAlves "GitHub de Leonardo")
+
+## Escolha de projeto
+
+Entre as opções de projeto disponíveis (detecção de erros ou tratamento de macros), foi optado realizar o tratamento de macros.
 
 ## Começando
 
@@ -36,6 +41,7 @@ Para utilização do projeto, você vai precisar dos seguintes:
 
 * Consulte sua distribuição (Ubuntu, Mint, Manjaro etc.)! Distribuições debian e arch, por exemplo, possuem modos de instalação/atualização diferentes!
   * Google é seu amigo!
+  * [Estes links](#feito-com) podem ser úteis.
 
 ### Instalando pré-requisitos em sistema operacional Windows ou macOS
 * Programa ainda não testado em/produzido para Windows ou macOS
@@ -48,14 +54,21 @@ Para utilização do projeto, você vai precisar dos seguintes:
    1. Navegue até o a pasta com o arquivo `Makefile`
    2. Digite o comando `make`
    3. Aguarde a compilação do código
-   4. Utilize o executável `./montador [-p -o] arquivo_de_entrada.asm` mudando o nome do arquivo de entrada para o nome utilizado por você (podendo utilizar caminho relativo a ele, isto é, `../arquivo.asm` levaria ao diretório superior, ou o caminho absoluto, como `/home/username/Documents/arquivo.asm`)
-      1. O uso de um, e somente um, dos argumentos -p ou -o é obrigatório.
-      2. Ao usar o argumento -p, o programa irá pré-processar o arquivo de entrada e gerar o arquivo de extensão `.pre` com o código realmente executado pelo programa de entrada
-      3. Ao usar o argumento -o, o programa irá pré-processar o arquivo de entrada e gerar o aqruivo de extensão `.obj` com o código decimal das instruções executadas pelo programa de entrada
+   4. Utilize o executável `./montador -p arquivo_de_entrada.asm` mudando o nome do arquivo de entrada para o nome utilizado por você (podendo utilizar caminho relativo a ele, isto é, `../arquivo.asm` levaria ao diretório superior, ou o caminho absoluto, como `/home/username/Documents/arquivo.asm`)
+       - Ao finalizar o pré-processamento, será gerado um arquivo com nome igual no mesmo diretório do arquivo de entrada, desta vez com extensão `.asm`
+   5. Para realizar a montagem, utilize o comando `./montador -o arquivo_de_entrada.pre`, sendo `arquivo_de_entrada.pre` o arquivo pré-processado gerado pelo passo 4
+       - Ao finalizar a montagem, será gerado um arquivo de mesmo nome e no mesmo diretório que o arquivo pré-processado, desta vez com extensão `.obj`
 
 ### Limitações
 
-1. Ainda não definidas
+1. Como foi escolhido o tratamento de macros, o programa não foi devidamente preparado para tratar erros de sintaxe/semântica
+   - Alguns erros são detectados durante o pré-processamento, impedindo a continuação do programa
+2. Instruções e diretivas com recebimento de argumentos no arquivo em pseudo assembly de entrada, conforme definido nas instruções para o trabalho, devem vir devidamente separadas (isto é, ao menos um espaço ou tabulação entre elas e sem espaços em branco antes da vírgula)
+   - Exemplo 1: `COPY L1,L2` ou `COPY L1 ,L2` estão incorretos, enquanto `COPY L1, L2` ou `COPY L1,      L2` estão corretos.
+   - Exemplo 2: `LABEL: MACRO &A,&B` ou `LABEL: MACRO &A ,&B` estão incorretos, enquanto `LABEL: MACRO &A, &B` ou `LABEL: MACRO &A,       &B` estão corretos.
+     - O mesmo vale para a chamada da macro: `LABEL A, B` é aceito, mas `LABEL A,B` não
+3. Conforme na definição do trabalho, o programa não diferencia maiúsculas de minúsculas, isto é, `Label:`, `LABEL:`, `label:`, `LaBeL:` ou variações são considerados rótulos iguais. O mesmo vale para instruções e diretivas.
+
 
 ## Feito com
 
