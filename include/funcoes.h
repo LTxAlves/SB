@@ -56,38 +56,11 @@ void putLine(std::fstream& arquivo, std::vector<std::string>& toPut);
 std::string alteraExtensaoNomeArquivo(std::string nomeArquivo, std::string novaExtensao);
 
 /**
- * Busca string na linha atual do arquivo ignorando maiúsculas/minúsculas
- * @param arquivo arquivo de entrada onde buscar
- * @param procurado string a procurar
- * @returns posicao do primeiro caractere da string procurada, -1 se nao encontrou
- * */
-bool encontrarNaLinha(std::fstream& arquivo, std::string procurado);
-
-/**
- * Retorna a label em uma linha do arquivo (condicao de parada = ':')
- * @returns string com o nome da label em caixa alta "ERRO!" se encontrou erro
- * */
-std::string getLabel(std::fstream& arquivo);
-
-/**
- * Retorna a palavra a partir da posicao atual do arquivo (condicao de parada = ';', CR, LF, SPACE ou TAB)
- * @param arquivo arquivo de entrada
- * @returns string com o nome da label em caixa alta "ERRO!" se encontrou erro
- * */
-std::string getWord(std::fstream& arquivo);
-
-/**
- * Ignora caracteres até encontrar CR ou LF ou EOF
- * @param arquivo arquivo de entrada
- * */
-void procuraFimLinha(std::fstream& arquivo);
-
-/**
  * Separa a string em suas substrings já com letras maiúsculas
  * @param linha linha lida do arquivo de entrada
  * @returns vetor de substrings da linha (ignorando comentários)
  * */
-std::vector<std::string> substrings(string linha);
+std::vector<std::string> substrings(std::string linha);
 
 /**
  * Retorna a string com caracteres em letras maiúsculas

@@ -25,7 +25,7 @@ class Diretiva {
         }
 
     private:
-        string  mnemonico;
+        std::string  mnemonico;
         int     numOperandos;
         int     tam;
 };

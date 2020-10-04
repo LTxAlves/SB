@@ -65,7 +65,7 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
         return -1;
     }
 
-    /*cout << "MACROS encontradas:" << endl;
+    cout << "MACROS encontradas:" << endl;
 
     for(auto it = macros.begin(); it != macros.end(); it++) {
         cout << it->first << ": ";
@@ -73,7 +73,7 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
         for(string s : vetor) {
             cout << s << endl;
         }
-    }*/
+    }
 
     arquivoSaida.close();
 
@@ -82,14 +82,25 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
 
 int mapeiaEqus(fstream& arquivoEntrada) {
 
-    int pos = arquivoEntrada.tellg();
-    string linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
-    vector<string> entradaSubstrings = substrings(linhaEntrada);
-    bool encontrouLabel = false, encontrouEQU = false;
-    string ultimaLabel;
+    int pos;
+    string linhaEntrada;
+    vector<string> entradaSubstrings;
+    bool encontrouLabel = false;
+    string ultimaLabel, str;
 
-    while(linhaEntrada.find("SECTION") == string::npos && !arquivoEntrada.eof() && !arquivoEntrada.bad()) {
-        for(string str : entradaSubstrings) {
+    do {
+        pos = arquivoEntrada.tellg();
+        linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
+        entradaSubstrings = substrings(linhaEntrada);
+        int tam = entradaSubstrings.size();
+
+        if(tam > 0) {
+            str = entradaSubstrings[0];
+
+            if(equs.find(str) != equs.end()) {
+                entradaSubstrings[0] = equs[str];
+                str = entradaSubstrings[0];
+            }
 
             if(str.back() == ':') {
                 str.pop_back();
@@ -135,31 +146,42 @@ int mapeiaEqus(fstream& arquivoEntrada) {
                 encontrouLabel = true;
                 ultimaLabel = str;
                 labels.push_back(str);
-            } else if(str.compare("EQU") == 0) {
-                if(!encontrouLabel) {
-                    cout << "Erro! EQU sem rótulo!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
+                tam--;
+                entradaSubstrings.erase(entradaSubstrings.begin());
+            }
+            
+            if(tam > 0) {
+                str = entradaSubstrings[0];
+                
+                if(str.compare("SECTION") == 0) {
+                    break;
                 }
 
-                if(encontrouEQU) {
-                    cout << "Erro! Duas diretivas EQU seguidas!" << endl;
+                if(str.compare("EQU") == 0) {
+
+                    if(tam != 2) {
+                        cout << "Erro! EQU com número de operandos incorreto!" << endl;
+                        arquivoEntrada.seekg(pos);
+                        return -1;
+                    }
+
+                    if(!encontrouLabel) {
+                        cout << "Erro! EQU sem rótulo!" << endl;
+                        arquivoEntrada.seekg(pos);
+                        return -1;
+                    }
+
+                    equs[ultimaLabel] = entradaSubstrings[1];
+                    encontrouLabel = false;
+                } else if((eDiretiva(str) || eInstrucao(str))) {
+                    cout << "Erro! Diretiva/Instrução " << str << " fora da seção de instruções!" << endl;
                     arquivoEntrada.seekg(pos);
                     return -1;
+                    
                 }
-
-                encontrouEQU = true;
-                equs[ultimaLabel] = "lixo";
-            } else if(!eDiretiva(str) && !eInstrucao(str) && encontrouEQU && encontrouLabel) {
-                equs[ultimaLabel] = str;
-                encontrouLabel = false;
-                encontrouEQU = false;
             }
         }
-        pos = arquivoEntrada.tellg();
-        linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
-        entradaSubstrings = substrings(linhaEntrada);
-    }
+    } while(!arquivoEntrada.eof() && !arquivoEntrada.bad());
 
     if(arquivoEntrada.eof() || arquivoEntrada.bad()) {
         cout << "Erro! Diretiva SECTION não encontrada!" << endl;
@@ -176,8 +198,17 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
     int pos = arquivoEntrada.tellg();
     string linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
     vector<string> entradaSubstrings = substrings(linhaEntrada);
+    int tam = entradaSubstrings.size();
 
-    if(entradaSubstrings.size() == 2 && entradaSubstrings[0].compare("SECTION") == 0 && entradaSubstrings[1].compare("TEXT") == 0 ) {
+    if(tam > 0) {
+        for(int i = 0; i < tam; i++) {
+            string s = entradaSubstrings[i];
+            if(equs.find(s) != equs.end())
+                entradaSubstrings[i] = equs[s];
+        }
+    }
+
+    if(entradaSubstrings.size() == 2 && entradaSubstrings[0].compare("SECTION") == 0 && entradaSubstrings[1].compare("TEXT") == 0) {
         arquivoSaida << "SECTION TEXT" << endl;
     }else {
         cout << "Erro! SECTION TEXT deve existir em linha sozinha e estar antes de SECTION DATA." << endl;
@@ -193,26 +224,33 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
         pos = arquivoEntrada.tellg();
         linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
         entradaSubstrings = substrings(linhaEntrada);
+        tam = entradaSubstrings.size();
 
-        /*if(linhaEntrada.find("STOP") != string::npos) {
-            if(entradaSubstrings.size() != 1) {
-                cout << "Erro! Instrução STOP deve estar sozinha em uma linha!" << endl;
+        if(tam > 0) {
+            for(int i = 0; i < tam; i++) {
+                string s = entradaSubstrings[i];
+                if(equs.find(s) != equs.end())
+                    entradaSubstrings[i] = equs[s];
+            }
+        }
+
+        if(find(entradaSubstrings.begin(), entradaSubstrings.end(), "SECTION") != entradaSubstrings.end()) {
+            if(tam != 2) {
+                cout << "Erro! Diretiva SECTION só recebe um argumento!" << endl;
                 arquivoEntrada.seekg(pos);
                 return -1;
             }
-        }*/
 
-        if(linhaEntrada.find("SECTION") != string::npos && linhaEntrada.find("DATA") != string::npos) {
-            if(entradaSubstrings.size() == 2 && entradaSubstrings[0].compare("SECTION") == 0 && entradaSubstrings[1].compare("DATA") == 0 ) {
-                arquivoSaida << "SECTION DATA" << endl;
-                contemData = true;
-            }else {
-                cout << "Erro! a Diretiva SECTION DATA deve estar sozinha na linha!" << endl;
+            if(entradaSubstrings[1].compare("DATA") != 0) {
+                cout << "Erro! Diretiva SECTION com argumento incorreto!" << endl;
+                arquivoEntrada.seekg(pos);
                 return -1;
             }
+
+            arquivoSaida << "SECTION DATA" << endl;
+            contemData = true;
             break;
         }
-        int tam = entradaSubstrings.size();
 
         if(tam > 0) {
             string str = entradaSubstrings[0];
@@ -308,6 +346,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                     }
 
                     for(string s : entradaSubstrings) {
+
                         toWrite.push_back(s);
                     }
 
@@ -348,6 +387,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                         if(tam > 1) {
                             for(int i = 1; i < tam; i++) {
                                 string arg = entradaSubstrings[i];
+
                                 if(arg.front() != '&') {
                                     cout << "Erro! Argumento de macro não iniciado por \'&\'!" << endl;
                                     arquivoEntrada.seekg(pos);
@@ -376,8 +416,10 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                                 args.pop_back();
                             }
                             macros[ultimaLabel].push_back(args);
-                            encontrouLabel = false;
+                        } else {
+                            macros[ultimaLabel].push_back("");
                         }
+                        encontrouLabel = false;
                         pos = arquivoEntrada.tellg();
                         linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
                         entradaSubstrings = substrings(linhaEntrada);
@@ -395,6 +437,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                     vector<string> args = substrings(macros[str][0]);
                     int numArgs = args.size();
                     if(tam != numArgs + 1) {
+                        cout << "NumArgs = " << numArgs << "\ttam = " << tam << endl;
                         cout << "Erro! Chamada da macro " << str << " com número incorreto de argumentos!";
                         arquivoEntrada.seekg(pos);
                         return -1;
@@ -469,7 +512,15 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
             linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
             entradaSubstrings = substrings(linhaEntrada);
 
-            int tam = entradaSubstrings.size();
+            tam = entradaSubstrings.size();
+
+            if(tam > 0) {
+                for(int i = 0; i < tam; i++) {
+                    string s = entradaSubstrings[i];
+                    if(equs.find(s) != equs.end())
+                        entradaSubstrings[i] = equs[s];
+                }
+            }
 
             if(tam > 0) {
                 string str = entradaSubstrings[0];
@@ -533,6 +584,11 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                     }
 
                     if(eDiretiva(str)) {
+                        if(str.compare("SECTION") == 0) {
+                            cout << "Erro! Só devem existir duas diretivas SECTION!" << endl;
+                            arquivoEntrada.seekg(pos);
+                            return -1;
+                        }
                         if(!encontrouLabel) {
                             cout << "Erro! Diretivas na seção de dados devem ter rótulos!" << endl;
                             return -1;
