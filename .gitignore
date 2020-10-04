@@ -31,3 +31,6 @@ montador
 *.exe
 *.out
 *.app
+
+#VSCode
+.vscode
