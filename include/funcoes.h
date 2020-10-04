@@ -23,7 +23,7 @@ const char CR = '\r';
 
 /**
  * Checa se uma string acaba com uma substring
- * @param stingOrigem string onde buscar
+ * @param stringOrigem string onde buscar
  * @param final substring a ser buscada no final
  * @returns true se stringOrigem acaba com final, falso caso contrário
  * */
@@ -33,13 +33,13 @@ bool acabaCom(string const &stringOrigem, string const &final);
  * Inicializa vetor com instruções de pseudo assembly
  * @returns vetor ordenado de instruções
  * */
-map<string, Instrucao> inicializaInstrucoes();
+map<string, Instrucao*> inicializaInstrucoes();
 
 /**
  * Inicializa vetor com diretivas de pseudo assembly
  * @returns vetor ordenado de diretivas
  * */
-map<string, Diretiva> inicializaDiretivas();
+map<string, Diretiva*> inicializaDiretivas();
 
 /**
  * Retorna uma linha do arquivo de entrada, parando em CR, LF ou CRLF
@@ -47,6 +47,13 @@ map<string, Diretiva> inicializaDiretivas();
  * @returns linha lida do arquivo
  * */
 string getLineModificado(fstream& arquivo);
+
+/**
+ * Insere um vetor de strings no arquivo
+ * @param arquivo arquivo de saída
+ * @param toPut vetor de strings a escrever
+ * */
+void putLine(fstream& arquivo, vector<string>& toPut);
 
 /**
  * Ignora chars passados como argumento

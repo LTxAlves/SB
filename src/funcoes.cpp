@@ -2,11 +2,17 @@
 
 #include <algorithm>
 #include <cctype>
+#include <iostream>
+#include <utility>
 
 using std::sort;
 using std::find;
 
 using std::toupper;
+
+using std::endl;
+
+using std::make_pair;
 
 static const vector<string> INST_VEC = {"ADD", "SUB", "MULT", "DIV", "JMP", "JMPN", "JMPP", "JMPZ", "COPY", "LOAD", "STORE", "INPUT", "OUTPUT", "STOP"};
 static const vector<string> DIR_VEC = {"SECTION", "SPACE", "CONST", "EQU", "IF", "MACRO", "ENDMACRO"};
@@ -20,54 +26,39 @@ bool acabaCom(string const &stringOrigem, string const &final) {
     }
 }
 
-map<string, Instrucao>  inicializaInstrucoes() {
+map<string, Instrucao*>  inicializaInstrucoes() {
 
-    vector<Instrucao> instrucoes;
+    map<string, Instrucao*> mapInst;
 
-    instrucoes.push_back(Instrucao("ADD",    1, 1,  2));
-    instrucoes.push_back(Instrucao("SUB",    1, 2,  2));
-    instrucoes.push_back(Instrucao("MULT",   1, 3,  2));
-    instrucoes.push_back(Instrucao("DIV",    1, 4,  2));
-    instrucoes.push_back(Instrucao("JMP",    1, 5,  2));
-    instrucoes.push_back(Instrucao("JMPN",   1, 6,  2));
-    instrucoes.push_back(Instrucao("JMPP",   1, 7,  2));
-    instrucoes.push_back(Instrucao("JMPZ",   1, 8,  2));
-    instrucoes.push_back(Instrucao("COPY",   2, 9,  3));
-    instrucoes.push_back(Instrucao("LOAD",   1, 10, 2));
-    instrucoes.push_back(Instrucao("STORE",  1, 11, 2));
-    instrucoes.push_back(Instrucao("INPUT",  1, 12, 2));
-    instrucoes.push_back(Instrucao("OUTPUT", 1, 13, 2));
-    instrucoes.push_back(Instrucao("STOP",   0, 14, 1));
-
-    sort(instrucoes.begin(), instrucoes.end());
-
-    map<string, Instrucao> mapInst;
-    for(Instrucao inst : instrucoes) {
-        mapInst[inst.getMnemonico()] = inst;
-    }
+    mapInst["ADD"]      = new Instrucao("ADD",    1, 1,  2);
+    mapInst["SUB"]      = new Instrucao("SUB",    1, 2,  2);
+    mapInst["MULT"]     = new Instrucao("MULT",   1, 3,  2);
+    mapInst["DIV"]      = new Instrucao("DIV",    1, 4,  2);
+    mapInst["JMP"]      = new Instrucao("JMP",    1, 5,  2);
+    mapInst["JMPN"]     = new Instrucao("JMPN",   1, 6,  2);
+    mapInst["JMPP"]     = new Instrucao("JMPP",   1, 7,  2);
+    mapInst["JMPZ"]     = new Instrucao("JMPZ",   1, 8,  2);
+    mapInst["COPY"]     = new Instrucao("COPY",   2, 9,  3);
+    mapInst["LOAD"]     = new Instrucao("LOAD",   1, 10, 2);
+    mapInst["STORE"]    = new Instrucao("STORE",  1, 11, 2);
+    mapInst["INPUT"]    = new Instrucao("INPUT",  1, 12, 2);
+    mapInst["OUTPUT"]   = new Instrucao("OUTPUT", 1, 13, 2);
+    mapInst["STOP"]     = new Instrucao("STOP",   0, 14, 1);
 
     return mapInst;
 }
 
-map< string, Diretiva> inicializaDiretivas() {
+map< string, Diretiva*> inicializaDiretivas() {
 
-    vector<Diretiva> diretivas;
+    map<string, Diretiva*> mapDir;
 
-    diretivas.push_back(Diretiva("SECTION",  1, 0));
-    diretivas.push_back(Diretiva("SPACE",    0, 1));
-    diretivas.push_back(Diretiva("CONST",    1, 0));
-    diretivas.push_back(Diretiva("EQU",      1, 0));
-    diretivas.push_back(Diretiva("IF",       1, 0));
-    diretivas.push_back(Diretiva("MACRO",    0, 0));
-    diretivas.push_back(Diretiva("ENDMACRO", 0, 0));
-
-    sort(diretivas.begin(), diretivas.end());
-
-    map<string, Diretiva> mapDir;
-
-    for(Diretiva dir : diretivas) {
-        mapDir[dir.getMnemonico()] = dir;
-    }
+    mapDir["SECTION"]   = new Diretiva("SECTION",  1, 0);
+    mapDir["SPACE"]     = new Diretiva("SPACE",    0, 1);
+    mapDir["CONST"]     = new Diretiva("CONST",    1, 1);
+    mapDir["EQU"]       = new Diretiva("EQU",      1, 0);
+    mapDir["IF"]        = new Diretiva("IF",       1, 0);
+    mapDir["MACRO"]     = new Diretiva("MACRO",    0, 0);
+    mapDir["ENDMACRO"]  = new Diretiva("ENDMACRO", 0, 0);
 
     return mapDir;
 }
@@ -92,6 +83,15 @@ string getLineModificado(fstream& arquivo) {
     }
     
     return linha;
+}
+
+void putLine(fstream& arquivo, vector<string> &toPut) {
+
+    for(vector<string>::iterator it = toPut.begin(); it != toPut.end() - 1; it++) {
+        arquivo << (*it).c_str() << ' ';
+    }
+
+    arquivo << toPut.back() << endl;
 }
 
 void ignoraChars(fstream& arquivo, vector<char> chars) {
@@ -239,24 +239,30 @@ vector<string> substrings(string linha) {
         char c = *it;
 
         if(c == ';' || c == CR || c == LF) {
-            if(umaString.compare("") != 0) {
+            if(umaString.size() != 0) {
                 substrings.push_back(umaString);
             }
             return substrings;
         } else if(c == SPACE || c == TAB) {
-            if(umaString.compare("") != 0) {
+            if(umaString.size() != 0) {
                 substrings.push_back(umaString);
             }
             umaString.clear();
-        } else if(c == ':' && umaString.compare("") != 0) {
+        } else if(c == ':') {
+            if(umaString.size() == 0) {
                 //adiciona : junto à última substring
                 substrings.back() += c;
+            } else {
+                umaString += c;
+            }
+            substrings.push_back(umaString);
+            umaString.clear();
         } else {
             umaString += toupper(c);
         }
     }
 
-    if(umaString.compare("") != 0) {
+    if(umaString.size() != 0) {
         substrings.push_back(umaString);
     }
 

@@ -49,9 +49,13 @@ int main(int argc, char** argv) {
 
     string flag = string(argv[1]);
 
-    if(FLAG_PRE.compare(flag) && FLAG_OBJ.compare(flag)) {
+    bool preProc = FLAG_PRE.compare(flag) == 0;
+    bool montar = FLAG_OBJ.compare(flag) == 0; 
+
+    if( !preProc && !montar ) {
         cerr << "Uso de argumento incorreto!" << endl
-        << "Modo de uso: ./montador -p (ou -o) arquivo.asm " << endl;
+        << "Modo de uso: ./montador -p arquivo.asm" << endl
+        << "ou: ./montador -o arquivo.pre" << endl;
 
         cout << flag << endl;
         return -2;
@@ -59,8 +63,11 @@ int main(int argc, char** argv) {
 
     string nomeArquivo = string(argv[2]);
 
-    if(!acabaCom(nomeArquivo, ".asm")) {
-        cerr << "Arquivo de entrada deve ter extensão .asm" << endl;
+    if(preProc && !acabaCom(nomeArquivo, ".asm")) {
+        cerr << "Arquivo de entrada para pré processamento deve ter extensão .asm" << endl;
+        return -3;
+    } else if(montar && !acabaCom(nomeArquivo, ".pre") ){
+        cerr << "Arquivo de entrada para montar deve ter extensão .pre" << endl;
         return -3;
     }
 

@@ -3,14 +3,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-
-using std::cerr;
-using std::cout;
-using std::endl;
-
-using std::string;
-
-using std::fstream;
+#include <vector>
 
 /**
  * Função principal para geração do arquivo .pre
@@ -18,13 +11,13 @@ using std::fstream;
  * @param arquivoEntrada referência ao arquivo de entrada
  * @returns 0 se executado corretamente, outro número se houve erro
  * */
-int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada);
+int mainPre(std::string nomeArquivoEntrada, std::fstream& arquivoEntrada);
 
 /**
  * Cria map das diretivas EQU
  * @returns -1 se erro, 0 caso contrário
  * */
-int mapeiaEqus(fstream& arquivoEntrada);
+int mapeiaEqus(std::fstream& arquivoEntrada);
 
 /**
  * Geração do arquivo .pre em si
@@ -32,4 +25,12 @@ int mapeiaEqus(fstream& arquivoEntrada);
  * @param arquivoSaida arquivo de saída
  * @returns -1 se erro, 0 caso contrário
  * */
-int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida);
+int geraPre(std::fstream& arquivoEntrada, std::fstream& arquivoSaida);
+
+/**
+ * Cria a tabela de definição de macro
+ * @param arquivoEntrada arquivo em pseudo assembly de entrada
+ * @param macroCorpo corpo da macro
+ * @returns -1 se erro, 0 caso contrário
+ * */
+int mapeiaMacro(std::fstream& arquivoEntrada, std::vector<std::string>& macroCorpo);
