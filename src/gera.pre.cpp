@@ -408,9 +408,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                         bool temVirgula = false;
 
                         for(string str : subst) {
-                            if(eInstrucao(str)) {
-                                toWrite.push_back(str);
-                            } else if (str.front() == '#') {
+                            if (str.front() == '#') {
                                 string aux;
 
                                 if(str.back() == ',') {
@@ -427,6 +425,8 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
 
                                 toWrite.push_back(aux);
 
+                            } else {
+                                toWrite.push_back(str);
                             }
                         }
 
