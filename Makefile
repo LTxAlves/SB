@@ -17,13 +17,13 @@ LIBS =
 INC_PATHS = $(addprefix -I,$(INC_PATH))
 
 #Diretivas de compilação
-FLAGS = -std=c++11 -Wall -g -pedantic -Wextra -Wno-unused-parameter -Werror=init-self
+FLAGS = -std=c++11 -Wall -g -pedantic -Wextra -Wno-unused-parameter -Werror=init-self -Wold-style-cast -Woverloaded-virtual -Wuninitialized -Wmissing-declarations -pedantic-errors
 
 #Diretivas extras para debug
 DFLAGS = -ggdb -O0 -DDEBUG -g
 
 #Diretivas extras para release
-RFLAGS = -O3 -mtune=native
+RFLAGS = -O1
 
 INC_PATH = $(sort $(dir $(wildcard include/*/*/)))
 INC_PATH += include/
@@ -101,7 +101,7 @@ clean:
 		-$(RMDIR) $(BUILD_PATH)
 		-$(RM) $(EXEC)
 
-release: FLAGS += $(RFLAFS)
+release: FLAGS += $(RFLAGS)
 release: $(EXEC)
 
 debug: FLAGS += $(DFLAGS)
