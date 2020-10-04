@@ -1,5 +1,7 @@
 #include "instrucao.h"
 
+using std::string;
+
 Instrucao::Instrucao(string mnemonico, int numOperandos, int cod, int tam) {
 
     this->mnemonico = mnemonico;

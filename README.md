@@ -64,10 +64,13 @@ Para utilização do projeto, você vai precisar dos seguintes:
 1. Como foi escolhido o tratamento de macros, o programa não foi devidamente preparado para tratar erros de sintaxe/semântica
    - Alguns erros são detectados durante o pré-processamento, impedindo a continuação do programa
 2. Instruções e diretivas com recebimento de argumentos no arquivo em pseudo assembly de entrada, conforme definido nas instruções para o trabalho, devem vir devidamente separadas (isto é, ao menos um espaço ou tabulação entre elas e sem espaços em branco antes da vírgula)
-   - Exemplo 1: `COPY L1,L2` ou `COPY L1 ,L2` estão incorretos, enquanto `COPY L1, L2` ou `COPY L1,      L2` estão corretos.
-   - Exemplo 2: `LABEL: MACRO &A,&B` ou `LABEL: MACRO &A ,&B` estão incorretos, enquanto `LABEL: MACRO &A, &B` ou `LABEL: MACRO &A,       &B` estão corretos.
+   - Exemplo 1: `COPY L1,L2` ou `COPY L1 ,L2` estão incorretos, enquanto `COPY L1, L2` ou `COPY L1,`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`L2` estão corretos.
+   - Exemplo 2: `LABEL: MACRO &A,&B` ou `LABEL: MACRO &A ,&B` estão incorretos, enquanto `LABEL: MACRO &A, &B` ou `LABEL: MACRO &A,`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`&B` estão corretos.
      - O mesmo vale para a chamada da macro: `LABEL A, B` é aceito, mas `LABEL A,B` não
 3. Conforme na definição do trabalho, o programa não diferencia maiúsculas de minúsculas, isto é, `Label:`, `LABEL:`, `label:`, `LaBeL:` ou variações são considerados rótulos iguais. O mesmo vale para instruções e diretivas.
+4. Alguma escolhas de projeto foram feitas devido à não definição específica da linguagem de pseudo assembly.
+    - Macros não podem incluir rótulos dentro do seu corpo de forma a evitar repetição de rótulos entre várias chamadas da mesma macro
+    - Diretivas do tipo IF e a linha seguinte as diretivas IF não podem possuir rótulos, de forma a não haver referências à linhas possivelmente deletadas durante pré-processamento
 
 
 ## Feito com

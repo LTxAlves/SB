@@ -8,14 +8,6 @@
 #include "instrucao.h"
 #include "diretiva.h"
 
-using std::string;
-
-using std::vector;
-
-using std::fstream;
-
-using std::map;
-
 const char SPACE = ' ';
 const char TAB = '\t';
 const char LF = '\n';
@@ -27,58 +19,33 @@ const char CR = '\r';
  * @param final substring a ser buscada no final
  * @returns true se stringOrigem acaba com final, falso caso contrário
  * */
-bool acabaCom(string const &stringOrigem, string const &final);
+bool acabaCom(std::string const &stringOrigem, std::string const &final);
 
 /**
  * Inicializa vetor com instruções de pseudo assembly
  * @returns vetor ordenado de instruções
  * */
-map<string, Instrucao*> inicializaInstrucoes();
+std::map<std::string, Instrucao*> inicializaInstrucoes();
 
 /**
  * Inicializa vetor com diretivas de pseudo assembly
  * @returns vetor ordenado de diretivas
  * */
-map<string, Diretiva*> inicializaDiretivas();
+std::map<std::string, Diretiva*> inicializaDiretivas();
 
 /**
  * Retorna uma linha do arquivo de entrada, parando em CR, LF ou CRLF
  * @param arquivo arquivo de entrada
  * @returns linha lida do arquivo
  * */
-string getLineModificado(fstream& arquivo);
+std::string getLineModificado(std::fstream& arquivo);
 
 /**
  * Insere um vetor de strings no arquivo
  * @param arquivo arquivo de saída
  * @param toPut vetor de strings a escrever
  * */
-void putLine(fstream& arquivo, vector<string>& toPut);
-
-/**
- * Ignora chars passados como argumento
- * @param arquivo arquivo de entrada
- * @param char caracteres a serem ignorados
- * */
-void ignoraChars(fstream& arquivo, vector<char> chars);
-
-/**
- * Ignora espaços e tabulações
- * @param arquivo arquivo de entrada
- * */
-void ignoraEspacoTab(fstream& arquivo);
-
-/**
- * Ignora quebras de linha
- * @param arquivo arquivo de entrada
- * */
-void ignoraQuebraLinha(fstream& arquivo);
-
-/**
- * Ignora quebras de linha, espaços e tabulações
- * @param arquivo arquivo de entrada
- * */
-void ignoraVazios(fstream& arquivo);
+void putLine(std::fstream& arquivo, std::vector<std::string>& toPut);
 
 /**
  * Altera 3 últimos caracteres da extensao do arquivo para a extensao especificada
@@ -86,7 +53,7 @@ void ignoraVazios(fstream& arquivo);
  * @param novaExtensao extensao a ser adicionada no nome
  * @returns nome do arquivo com extensão trocada
  * */
-string alteraExtensaoNomeArquivo(string nomeArquivo, string novaExtensao);
+std::string alteraExtensaoNomeArquivo(std::string nomeArquivo, std::string novaExtensao);
 
 /**
  * Busca string na linha atual do arquivo ignorando maiúsculas/minúsculas
@@ -94,40 +61,40 @@ string alteraExtensaoNomeArquivo(string nomeArquivo, string novaExtensao);
  * @param procurado string a procurar
  * @returns posicao do primeiro caractere da string procurada, -1 se nao encontrou
  * */
-bool encontrarNaLinha(fstream& arquivo, string procurado);
+bool encontrarNaLinha(std::fstream& arquivo, std::string procurado);
 
 /**
  * Retorna a label em uma linha do arquivo (condicao de parada = ':')
  * @returns string com o nome da label em caixa alta "ERRO!" se encontrou erro
  * */
-string getLabel(fstream& arquivo);
+std::string getLabel(std::fstream& arquivo);
 
 /**
  * Retorna a palavra a partir da posicao atual do arquivo (condicao de parada = ';', CR, LF, SPACE ou TAB)
  * @param arquivo arquivo de entrada
  * @returns string com o nome da label em caixa alta "ERRO!" se encontrou erro
  * */
-string getWord(fstream& arquivo);
+std::string getWord(std::fstream& arquivo);
 
 /**
  * Ignora caracteres até encontrar CR ou LF ou EOF
  * @param arquivo arquivo de entrada
  * */
-void procuraFimLinha(fstream& arquivo);
+void procuraFimLinha(std::fstream& arquivo);
 
 /**
  * Separa a string em suas substrings já com letras maiúsculas
  * @param linha linha lida do arquivo de entrada
  * @returns vetor de substrings da linha (ignorando comentários)
  * */
-vector<string> substrings(string linha);
+std::vector<std::string> substrings(string linha);
 
 /**
  * Retorna a string com caracteres em letras maiúsculas
  * @param str string para transformar
  * @returns string de entrada transformada em letras maiúsculas
  * */
-string toupperStr(string str);
+std::string toupperStr(std::string str);
 
 /**
  * Verifica se a string passada como argumento é uma diretiva
@@ -135,7 +102,7 @@ string toupperStr(string str);
  * @param str string a buscar
  * @returns booleano indicando se é uma diretiva
  * */
-bool eDiretiva(string str);
+bool eDiretiva(std::string str);
 
 /**
  * Verifica se a string passada como argumento é uma instrução
@@ -143,4 +110,4 @@ bool eDiretiva(string str);
  * @param str string a buscar
  * @returns booleano indicando se é uma diretiva
  * */
-bool eInstrucao(string str);
+bool eInstrucao(std::string str);

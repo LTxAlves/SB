@@ -4,29 +4,22 @@
 #include <iostream>
 #include <iomanip>
 
-using std::string;
-
-using std::ostream;
-using std::cout;
-
-using std::setw;
-
 class Diretiva {
 
     public:
-        Diretiva(string, int, int);
-        string getMnemonico();
+        Diretiva(std::string, int, int);
+        std::string getMnemonico();
         int getNumOperandos();
         int getTam();
 
         bool operator<(const Diretiva&);
-        friend ostream& operator<<(ostream& os, const Diretiva& dir) {
+        friend std::ostream& operator<<(std::ostream& os, const Diretiva& dir) {
 
             int w = 10;
 
-            os << "Mnemônico: " << setw(w)  << dir.mnemonico
-            <<  " Operandos: " << setw(w) << dir.numOperandos
-            <<  " Tamanho: " << setw(w) << dir.tam;
+            os << "Mnemônico: " << std::setw(w)  << dir.mnemonico
+            <<  " Operandos: " << std::setw(w) << dir.numOperandos
+            <<  " Tamanho: " << std::setw(w) << dir.tam;
 
             return os; 
         }

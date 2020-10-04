@@ -4,37 +4,30 @@
 #include <iostream>
 #include <iomanip>
 
-using std::string;
-
-using std::ostream;
-using std::cout;
-
-using std::setw;
-
 class Instrucao {
 
     public:
-        Instrucao(string, int, int, int);
-        string getMnemonico();
+        Instrucao(std::string, int, int, int);
+        std::string getMnemonico();
         int getNumOperandos();
         int getCod();
         int getTam();
 
         bool operator<(const Instrucao &);
-        friend ostream& operator<<(ostream& os, const Instrucao &inst) {
+        friend std::ostream& operator<<(std::ostream& os, const Instrucao &inst) {
 
             int w = 10;
 
-            os << "Mnemônico: " << setw(w) << inst.mnemonico
-            <<  " Operandos: " << setw(w) << inst.numOperandos
-            << " Código: " << setw(w) << inst.cod
-            <<  " Tamanho: " << setw(w) << inst.tam;
+            os << "Mnemônico: " << std::setw(w) << inst.mnemonico
+            <<  " Operandos: " << std::setw(w) << inst.numOperandos
+            << " Código: " << std::setw(w) << inst.cod
+            <<  " Tamanho: " << std::setw(w) << inst.tam;
 
             return os; 
         }
 
     private:
-        string  mnemonico;
+        std::string  mnemonico;
         int     numOperandos;
         int     cod;
         int     tam;

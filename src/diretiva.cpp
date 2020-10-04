@@ -1,5 +1,7 @@
 #include "diretiva.h"
 
+using std::string;
+
 Diretiva::Diretiva(string mnemonico, int numOperandos, int tam) {
 
     this->mnemonico = mnemonico;

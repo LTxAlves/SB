@@ -14,6 +14,14 @@ using std::endl;
 
 using std::make_pair;
 
+using std::vector;
+
+using std::string;
+
+using std::map;
+
+using std::fstream;
+
 static const vector<string> INST_VEC = {"ADD", "SUB", "MULT", "DIV", "JMP", "JMPN", "JMPP", "JMPZ", "COPY", "LOAD", "STORE", "INPUT", "OUTPUT", "STOP"};
 static const vector<string> DIR_VEC = {"SECTION", "SPACE", "CONST", "EQU", "IF", "MACRO", "ENDMACRO"};
 
@@ -136,7 +144,7 @@ void ignoraVazios(fstream& arquivo) {
 
 string alteraExtensaoNomeArquivo(string nomeArquivo, string novaExtensao) {
 
-    string nomeArquivoNovo = nomeArquivo.substr(0, nomeArquivo.size() - 3); //retira "asm" da extensao
+    string nomeArquivoNovo = nomeArquivo.substr(0, nomeArquivo.size() - 3); //retira "asm" ou "pre" da extensao
     nomeArquivoNovo += novaExtensao; //adiciona nova extensao
 
     return nomeArquivoNovo;
@@ -239,17 +247,17 @@ vector<string> substrings(string linha) {
         char c = *it;
 
         if(c == ';' || c == CR || c == LF) {
-            if(umaString.size() != 0) {
+            if(!umaString.empty()) {
                 substrings.push_back(umaString);
             }
             return substrings;
         } else if(c == SPACE || c == TAB) {
-            if(umaString.size() != 0) {
+            if(!umaString.empty()) {
                 substrings.push_back(umaString);
             }
             umaString.clear();
         } else if(c == ':') {
-            if(umaString.size() == 0) {
+            if(umaString.empty()) {
                 //adiciona : junto à última substring
                 substrings.back() += c;
             } else {
@@ -262,7 +270,7 @@ vector<string> substrings(string linha) {
         }
     }
 
-    if(umaString.size() != 0) {
+    if(!umaString.empty()) {
         substrings.push_back(umaString);
     }
 

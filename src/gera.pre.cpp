@@ -17,12 +17,14 @@ using std::vector;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::fstream;
 
 using std::find;
 using std::count;
 
 using std::to_string;
 
+using std::string;
 using std::stoi;
 
 map<string, string> equs;
@@ -92,7 +94,7 @@ int mapeiaEqus(fstream& arquivoEntrada) {
             if(str.back() == ':') {
                 str.pop_back();
 
-                if(str.size() == 0) {
+                if(str.empty()) {
                     cout << "Erro! Rótulo vazio!" << endl;
                     arquivoEntrada.seekg(pos);
                     return -1;
@@ -225,7 +227,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
 
                 str.pop_back();
 
-                if(str.size() == 0) {
+                if(str.empty()) {
                     cout << "Erro! Rótulo vazio!" << endl;
                     arquivoEntrada.seekg(pos);
                     return -1;
@@ -237,7 +239,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                     return -1;
                 }
 
-                if(str.size() == 0) {
+                if(str.empty()) {
                     cout << "Erro! Rótulo vazio!" << endl;
                     arquivoEntrada.seekg(pos);
                     return -1;
@@ -357,6 +359,11 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                                 if(arg.back() == ',')
                                     arg.pop_back();
                                 
+                                if(arg.empty()) {
+                                    cout << "Erro! Argumento de macro vazio!" << endl;
+                                    arquivoEntrada.seekg(pos);
+                                    return -1;
+                                }
                                 macroArgs[arg] = varNum;
                             }
                             string args;
@@ -365,7 +372,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                                 args.append(it->second);
                                 args.append(" ");
                             }
-                            if(args.size() > 0) {
+                            if(!args.empty()) {
                                 args.pop_back();
                             }
                             macros[ultimaLabel].push_back(args);
@@ -430,7 +437,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                             }
                         }
 
-                        if(toWrite.size() > 0) {
+                        if(!toWrite.empty()) {
                             putLine(arquivoSaida, toWrite);
                             toWrite.clear();
                         }
@@ -443,7 +450,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                     return -1;
                 }
 
-                if(toWrite.size() > 0) {
+                if(!toWrite.empty()) {
                     putLine(arquivoSaida, toWrite);
                     toWrite.clear();
                 }
@@ -550,7 +557,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
 
                 }
 
-                if(toWrite.size() > 0) {
+                if(!toWrite.empty()) {
                     putLine(arquivoSaida, toWrite);
                     toWrite.clear();
                 }
@@ -626,7 +633,7 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo) {
                             linha.push_back(SPACE);
                     }
 
-                    if(linha.size() > 0)
+                    if(!linha.empty())
                         macroCorpo.push_back(linha);
 
                 } else if(eDiretiva(str)) {
