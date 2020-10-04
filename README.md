@@ -68,14 +68,16 @@ Para utilização do projeto, você vai precisar dos seguintes:
    - Exemplo 2: `LABEL: MACRO &A,&B` ou `LABEL: MACRO &A ,&B` estão incorretos, enquanto `LABEL: MACRO &A, &B` ou `LABEL: MACRO &A,`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`&B` estão corretos.
      - O mesmo vale para a chamada da macro: `LABEL A, B` é aceito, mas `LABEL A,B` não
 3. Conforme na definição do trabalho, o programa não diferencia maiúsculas de minúsculas, isto é, `Label:`, `LABEL:`, `label:`, `LaBeL:` ou variações são considerados rótulos iguais. O mesmo vale para instruções e diretivas.
-4. Alguma escolhas de projeto foram feitas devido à não definição específica da linguagem de pseudo assembly.
+4. Alguma escolhas de projeto foram feitas devido à não definição específica da linguagem de pseudo assembly:
     - Macros não podem incluir rótulos dentro do seu corpo de forma a evitar repetição de rótulos entre várias chamadas da mesma macro
     - Diretivas do tipo IF e a linha seguinte as diretivas IF não podem possuir rótulos, de forma a não haver referências à linhas possivelmente deletadas durante pré-processamento
+    - A quebra de linha (LF, CR ou CRLF) é considerada como o separador de instruções. Sendo assim, cada instrução/diretiva deve vir em uma linha sem outras instruções/diretivas e com todos os seus operandos
 
 
 ## Feito com
 
 * [C++](https://www.cplusplus.com/)
+* [gcc](https://gcc.gnu.org/)
 * [make](https://www.gnu.org/software/make/manual/make.html)
 
 ## Reconhecimentos
