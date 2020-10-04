@@ -48,6 +48,13 @@ std::string getLineModificado(std::fstream& arquivo);
 void putLine(std::fstream& arquivo, std::vector<std::string>& toPut);
 
 /**
+ * Insere um vetor de strings no arquivo
+ * @param arquivo arquivo de saída
+ * @param toPut vetor de inteiros a escrever
+ * */
+void putVectorInt(std::fstream& arquivo, std::vector<int>& toPut);
+
+/**
  * Altera 3 últimos caracteres da extensao do arquivo para a extensao especificada
  * @param nomeArquivo nome do arqivo original com extensao
  * @param novaExtensao extensao a ser adicionada no nome

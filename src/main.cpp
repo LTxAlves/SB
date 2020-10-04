@@ -23,6 +23,7 @@
 #include "instrucao.h"
 #include "diretiva.h"
 #include "gera.pre.h"
+#include "gera.obj.h"
 
 using std::cin;
 using std::cout;
@@ -81,7 +82,11 @@ int main(int argc, char** argv) {
     
     cout << "Arquivo aberto com sucesso! Iniciando execução..." << endl;
     
-    mainPre(nomeArquivo, arquivoEntrada);
+    if(preProc) {
+        mainPre(nomeArquivo, arquivoEntrada);
+    } else if(montar) {
+        mainObj(nomeArquivo, arquivoEntrada);
+    }
     
     arquivoEntrada.close();
 

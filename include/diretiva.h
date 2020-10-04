@@ -7,7 +7,7 @@
 class Diretiva {
 
     public:
-        Diretiva(std::string, int, int);
+        Diretiva(std::string mnemonico, int numOperandos, int tam);
         std::string getMnemonico();
         int getNumOperandos();
         int getTam();

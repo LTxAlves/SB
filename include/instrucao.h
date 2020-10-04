@@ -7,7 +7,7 @@
 class Instrucao {
 
     public:
-        Instrucao(std::string, int, int, int);
+        Instrucao(std::string mnemonico, int numOperandos, int cod, int tam);
         std::string getMnemonico();
         int getNumOperandos();
         int getCod();

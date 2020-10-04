@@ -54,17 +54,20 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
         return -1;
     }
 
-    /*cout << "Diretivas EQU encontradas:" << endl;
+    #if DEBUG
+    cout << "Diretivas EQU encontradas:" << endl;
 
     for(auto it = equs.begin(); it != equs.end(); it++) {
         cout << it->first << " = " << it->second << endl;
-    }*/
+    }
+    #endif
 
     if(geraPre(arquivoEntrada, arquivoSaida) != 0) {
         arquivoSaida.close();
         return -1;
     }
 
+    #if DEBUG
     cout << "MACROS encontradas:" << endl;
 
     for(auto it = macros.begin(); it != macros.end(); it++) {
@@ -74,6 +77,7 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
             cout << s << endl;
         }
     }
+    #endif
 
     arquivoSaida.close();
 
@@ -584,6 +588,21 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                     }
 
                     if(eDiretiva(str)) {
+
+                        if(str.compare("CONST") == 0 && tam == 3) { //checa se diretiva const veio no formato CONST +/- valor em vez de const valor
+                            string sinal = entradaSubstrings[1];
+
+                            if(sinal.compare("+") != 0 && sinal.compare("-") != 0) {
+                                cout << "Erro nos argumentos da diretiva CONST!" << endl;
+                                arquivoEntrada.seekg(pos);
+                                return -1;
+                            }
+
+                            entradaSubstrings[1] = sinal.append(entradaSubstrings[2]);
+                            entradaSubstrings.pop_back();
+                            tam--;
+                        }
+
                         if(str.compare("SECTION") == 0) {
                             cout << "Erro! Só devem existir duas diretivas SECTION!" << endl;
                             arquivoEntrada.seekg(pos);

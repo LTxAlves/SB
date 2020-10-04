@@ -102,6 +102,16 @@ void putLine(fstream& arquivo, vector<string> &toPut) {
     arquivo << toPut.back() << endl;
 }
 
+void putVectorInt(std::fstream& arquivo, std::vector<int>& toPut) {
+
+    for(vector<int>::iterator it = toPut.begin(); it != toPut.end() - 1; it++) {
+        arquivo << (*it) << ' ';
+    }
+
+    arquivo << toPut.back();
+}
+
+
 string alteraExtensaoNomeArquivo(string nomeArquivo, string novaExtensao) {
 
     string nomeArquivoNovo = nomeArquivo.substr(0, nomeArquivo.size() - 3); //retira "asm" ou "pre" da extensao
