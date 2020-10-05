@@ -56,6 +56,13 @@ map<string, Instrucao*>  inicializaInstrucoes() {
     return mapInst;
 }
 
+void deletaInstrucoes(std::map<std::string, Instrucao*>& instrucoes) {
+
+    for(auto it = instrucoes.begin(); it != instrucoes.end(); it++) {
+        delete it->second;
+    }
+}
+
 map< string, Diretiva*> inicializaDiretivas() {
 
     map<string, Diretiva*> mapDir;
@@ -69,6 +76,13 @@ map< string, Diretiva*> inicializaDiretivas() {
     mapDir["ENDMACRO"]  = new Diretiva("ENDMACRO", 0, 0);
 
     return mapDir;
+}
+
+void deletaDiretivas(std::map<std::string, Diretiva*>& diretivas) {
+
+    for(auto it = diretivas.begin(); it != diretivas.end(); it++) {
+        delete it->second;
+    }
 }
 
 string getLineModificado(fstream& arquivo) {

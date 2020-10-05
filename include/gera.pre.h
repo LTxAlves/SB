@@ -4,6 +4,10 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <map>
+
+#include "instrucao.h"
+#include "diretiva.h"
 
 /**
  * Função principal para geração do arquivo .pre
@@ -23,14 +27,18 @@ int mapeiaEqus(std::fstream& arquivoEntrada);
  * Geração do arquivo .pre em si
  * @param arquivoEntrada arquivo em pseudo assembly de entrada
  * @param arquivoSaida arquivo de saída
+ * @param instrucoes mapa de instruções
+ * @param diretivas mapa de diretivas
  * @returns -1 se erro, 0 caso contrário
  * */
-int geraPre(std::fstream& arquivoEntrada, std::fstream& arquivoSaida);
+int geraPre(std::fstream& arquivoEntrada, std::fstream& arquivoSaida, std::map<std::string, Instrucao*>& instrucoes, std::map<std::string, Diretiva*>& diretivas);
 
 /**
  * Cria a tabela de definição de macro
  * @param arquivoEntrada arquivo em pseudo assembly de entrada
  * @param macroCorpo corpo da macro
+ * @param instrucoes mapa de instruções
+ * @param diretivas mapa de diretivas
  * @returns -1 se erro, 0 caso contrário
  * */
-int mapeiaMacro(std::fstream& arquivoEntrada, std::vector<std::string>& macroCorpo);
+int mapeiaMacro(std::fstream& arquivoEntrada, std::vector<std::string>& macroCorpo, std::map<std::string, Instrucao*>& instrucoes, std::map<std::string, Diretiva*>& diretivas);

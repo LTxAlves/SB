@@ -4,6 +4,7 @@
 - [Trabalho 1 - Software Básico](#trabalho-1---software-básico)
   - [Índice](#índice)
   - [Autor](#autor)
+  - [Antes de iniciar](#antes-de-iniciar)
   - [Escolha de projeto](#escolha-de-projeto)
   - [Começando](#começando)
     - [Pré-requisitos](#pré-requisitos)
@@ -19,9 +20,14 @@
 
 * **Leonardo Alves** - *16/0012007* - [LTxAlves](https://github.com/LTxAlves "GitHub de Leonardo")
 
+## Antes de iniciar
+
+Recomenda-se o uso de um visualizador de markdown para a leitura deste documento. Exemplo: [Markdown Live Preview](https://markdownlivepreview.com/)
+
 ## Escolha de projeto
 
-Entre as opções de projeto disponíveis (detecção de erros ou tratamento de macros), foi optado realizar o tratamento de macros.
+* Entre as opções de projeto disponíveis (detecção de erros ou tratamento de macros), foi optado realizar o tratamento de macros.
+* Não há limitação na quantidade de macros ou de argumentos para cada macro do arquivo de entrada.
 
 ## Começando
 
@@ -44,6 +50,7 @@ Para utilização do projeto, você vai precisar dos seguintes:
   * [Estes links](#feito-com) podem ser úteis.
 
 ### Instalando pré-requisitos em sistema operacional Windows ou macOS
+
 * Programa ainda não testado em/produzido para Windows ou macOS
 
 ## Executando o programa
@@ -52,7 +59,7 @@ Para utilização do projeto, você vai precisar dos seguintes:
 2. Coloque o(s) arquivo(s) de entrada (extensão .asm) no mesmo diretório do arquivo `Makefile` baixado (opcional)
 3. Via terminal/linha de comando:
    1. Navegue até o a pasta com o arquivo `Makefile`
-   2. Digite o comando `make`
+   2. Digite o comando `make release`
    3. Aguarde a compilação do código
    4. Utilize o executável `./montador -p arquivo_de_entrada.asm` mudando o nome do arquivo de entrada para o nome utilizado por você (podendo utilizar caminho relativo a ele, isto é, `../arquivo.asm` levaria ao diretório superior, ou o caminho absoluto, como `/home/username/Documents/arquivo.asm`)
        - Ao finalizar o pré-processamento, será gerado um arquivo com nome igual no mesmo diretório do arquivo de entrada, desta vez com extensão `.asm`
@@ -62,7 +69,8 @@ Para utilização do projeto, você vai precisar dos seguintes:
 ### Limitações
 
 1. Como foi escolhido o tratamento de macros, o programa não foi devidamente preparado para tratar erros de sintaxe/semântica
-   - Alguns erros são detectados durante o pré-processamento, impedindo a continuação do programa
+   - Alguns erros (relativos a diretivas MACRO, EQU e IF) são detectados durante o pré-processamento, impedindo a continuação do programa
+   - Alguns erros são identificados durante a montagem, porém o programa para a execução caso encontre algum erro, mostrando apenas o primeiro erro encontrado.
 2. Instruções e diretivas com recebimento de argumentos no arquivo em pseudo assembly de entrada, conforme definido nas instruções para o trabalho, devem vir devidamente separadas (isto é, ao menos um espaço ou tabulação entre elas e sem espaços em branco antes da vírgula)
    - Exemplo 1: `COPY L1,L2` ou `COPY L1 ,L2` estão incorretos, enquanto `COPY L1, L2` ou `COPY L1,`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`L2` estão corretos.
    - Exemplo 2: `LABEL: MACRO &A,&B` ou `LABEL: MACRO &A ,&B` estão incorretos, enquanto `LABEL: MACRO &A, &B` ou `LABEL: MACRO &A,`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`&B` estão corretos.
@@ -72,6 +80,8 @@ Para utilização do projeto, você vai precisar dos seguintes:
     - Macros não podem incluir rótulos dentro do seu corpo de forma a evitar repetição de rótulos entre várias chamadas da mesma macro
     - Diretivas do tipo IF e a linha seguinte as diretivas IF não podem possuir rótulos, de forma a não haver referências à linhas possivelmente deletadas durante pré-processamento
     - A quebra de linha (LF, CR ou CRLF) é considerada como o separador de instruções. Sendo assim, cada instrução/diretiva deve vir em uma linha sem outras instruções/diretivas e com todos os seus operandos
+    - Macros não podem conter chamdas a outras macros dentro do seu corpo
+    - Macros não podem conter definições de outras macros dentro do seu corpo
 
 
 ## Feito com

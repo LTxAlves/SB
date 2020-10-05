@@ -32,10 +32,10 @@ vector<string> labels;
 map<string, vector<string>> macros;
 map<string, string> macroArgs;
 
-map<string, Diretiva*> diretivas      = inicializaDiretivas();
-map<string, Instrucao*> instrucoes    = inicializaInstrucoes();
-
 int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
+
+    map<string, Diretiva*> diretivas      = inicializaDiretivas();
+    map<string, Instrucao*> instrucoes    = inicializaInstrucoes();
 
     string nomeArquivoSaida = alteraExtensaoNomeArquivo(nomeArquivoEntrada, "pre");
 
@@ -44,6 +44,8 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
 
     if(!arquivoSaida.is_open() || arquivoSaida.bad())  {
         cerr << "Erro ao criar arquivo " << nomeArquivoSaida << endl;
+        deletaDiretivas(diretivas);
+        deletaInstrucoes(instrucoes);
         return -1;
     }
 
@@ -51,6 +53,8 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
 
     if( mapeiaEqus(arquivoEntrada) != 0 ) {
         arquivoSaida.close();
+        deletaDiretivas(diretivas);
+        deletaInstrucoes(instrucoes);
         return -1;
     }
 
@@ -62,8 +66,10 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
     }
     #endif
 
-    if(geraPre(arquivoEntrada, arquivoSaida) != 0) {
+    if(geraPre(arquivoEntrada, arquivoSaida, instrucoes, diretivas) != 0) {
         arquivoSaida.close();
+        deletaDiretivas(diretivas);
+        deletaInstrucoes(instrucoes);
         return -1;
     }
 
@@ -80,6 +86,9 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
     #endif
 
     arquivoSaida.close();
+    
+    deletaDiretivas(diretivas);
+    deletaInstrucoes(instrucoes);
 
     return 0;
 }
@@ -108,44 +117,6 @@ int mapeiaEqus(fstream& arquivoEntrada) {
 
             if(str.back() == ':') {
                 str.pop_back();
-
-                if(str.empty()) {
-                    cout << "Erro! Rótulo vazio!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
-                if(eDiretiva(str) || eInstrucao(str)) {
-                    cout << "Erro! Rótulo proibido: palavra reservada!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
-                if(encontrouLabel) {
-                    cout << "Erro! Dois rótulos seguidos encontrados!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
-                if(str[0] >= '0' && str[0] <= '9') {
-                    cout << "Erro! Rótulo iniciado por dígito numérico." << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
-                for(char c : str) {
-                    if(!(c >= 'A' && c <= 'Z') && !( c >= '0' && c <= '9') && c != '_') {
-                        cout << "Erro! Rótulo com caracteres não permitidos!" << endl;
-                        arquivoEntrada.seekg(pos);
-                        return -1;
-                    }
-                }
-
-                if(find(labels.begin(), labels.end(), str) != labels.end()) {
-                    cout << "Erro! Redefinição de rótulo!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
 
                 encontrouLabel = true;
                 ultimaLabel = str;
@@ -197,14 +168,14 @@ int mapeiaEqus(fstream& arquivoEntrada) {
     return 0;
 }
 
-int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
+int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string, Instrucao*>& instrucoes, std::map<std::string, Diretiva*>& diretivas) {
 
-    int pos = arquivoEntrada.tellg();
-    string linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
-    vector<string> entradaSubstrings = substrings(linhaEntrada);
-    int tam = entradaSubstrings.size();
+    int pos;// = arquivoEntrada.tellg();
+    string linhaEntrada;// = toupperStr(getLineModificado(arquivoEntrada));
+    vector<string> entradaSubstrings;// = substrings(linhaEntrada);
+    int tam;// = entradaSubstrings.size();
 
-    if(tam > 0) {
+    /*if(tam > 0) {
         for(int i = 0; i < tam; i++) {
             string s = entradaSubstrings[i];
             if(equs.find(s) != equs.end())
@@ -217,7 +188,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
     }else {
         cout << "Erro! SECTION TEXT deve existir em linha sozinha e estar antes de SECTION DATA." << endl;
         return -1;
-    }
+    }*/
 
     string ultimaLabel;
     bool encontrouLabel = false, encontrouIf = false, ifVerdadeiro = false, contemData = false;
@@ -238,24 +209,6 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
             }
         }
 
-        if(find(entradaSubstrings.begin(), entradaSubstrings.end(), "SECTION") != entradaSubstrings.end()) {
-            if(tam != 2) {
-                cout << "Erro! Diretiva SECTION só recebe um argumento!" << endl;
-                arquivoEntrada.seekg(pos);
-                return -1;
-            }
-
-            if(entradaSubstrings[1].compare("DATA") != 0) {
-                cout << "Erro! Diretiva SECTION com argumento incorreto!" << endl;
-                arquivoEntrada.seekg(pos);
-                return -1;
-            }
-
-            arquivoSaida << "SECTION DATA" << endl;
-            contemData = true;
-            break;
-        }
-
         if(tam > 0) {
             string str = entradaSubstrings[0];
             //linha com label
@@ -268,56 +221,6 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                 }
 
                 str.pop_back();
-
-                if(str.empty()) {
-                    cout << "Erro! Rótulo vazio!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
-                if(eDiretiva(str) || eInstrucao(str)) {
-                    cout << "Erro! Rótulo proibido: palavra reservada!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
-                if(str.empty()) {
-                    cout << "Erro! Rótulo vazio!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
-                if(eDiretiva(str) || eInstrucao(str)) {
-                    cout << "Erro! Rótulo proibido: palavra reservada!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
-                if(encontrouLabel) {
-                    cout << "Erro! Dois rótulos seguidos encontrados!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
-                if(str[0] >= '0' && str[0] <= '9') {
-                    cout << "Erro! Rótulo iniciado por dígito numérico." << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
-                for(char c : str) {
-                    if(!(c >= 'A' && c <= 'Z') && !( c >= '0' && c <= '9') && c != '_') {
-                        cout << "Erro! Rótulo com caracteres não permitidos!" << endl;
-                        arquivoEntrada.seekg(pos);
-                        return -1;
-                    }
-                }
-
-                if(find(labels.begin(), labels.end(), str) != labels.end()) {
-                    cout << "Erro! Redefinição de rótulo!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
 
                 encontrouLabel = true;
                 labels.push_back(str);
@@ -337,12 +240,6 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
 
                 if(eInstrucao(str)) {
                     //tratamento de instruções
-                    int tamInst = instrucoes[str]->getTam();
-                    if(tam != tamInst) {
-                        cout << "Erro! Número de operandos da instrução " << str << " incorreto!" << endl;
-                        arquivoEntrada.seekg(pos);
-                        return -1;
-                    }
                     if(encontrouLabel) {
                         encontrouLabel = false;
                         ultimaLabel.push_back(':');
@@ -356,13 +253,6 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
 
                 } else if(eDiretiva(str)) {
                     //tratamento de diretivas
-                    int tamDir = diretivas[str]->getNumOperandos() + 1;
-
-                    if(str.compare("MACRO") != 0 && tam != tamDir) {
-                        cout << "Erro! Número de operandos da diretiva " << str << " incorreto!" << endl;
-                        arquivoEntrada.seekg(pos);
-                        return -1;
-                    }
 
                     if(str.compare("IF") == 0) {
                         encontrouIf = true;
@@ -400,10 +290,15 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                                 string varNum = "#";
                                 varNum.append(to_string(i));
 
-                                if(arg.back() == ',')
-                                    arg.pop_back();
+                                if(arg.back() == ',') {
+                                    if(i != tam - 1)
+                                        arg.pop_back();
+                                    else {
+                                        cout << "Erro! Argumento final acabado em \',\'!" << endl;
+                                    }
+                                }
                                 
-                                if(arg.empty()) {
+                                if(arg.compare("&") == 0) {
                                     cout << "Erro! Argumento de macro vazio!" << endl;
                                     arquivoEntrada.seekg(pos);
                                     return -1;
@@ -431,17 +326,31 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                         vector<string>& macroCorpo = macros[ultimaLabel];
                         arquivoEntrada.seekg(pos);
 
-                        if(mapeiaMacro(arquivoEntrada, macroCorpo) != 0)
+                        if(mapeiaMacro(arquivoEntrada, macroCorpo, instrucoes, diretivas) != 0)
                             return -1;
 
                         macroArgs.clear();
+                    } else if(str.compare("SECTION") == 0){
+                        
+                        for(string s : entradaSubstrings) {
+                            toWrite.push_back(s);
+                        }
+
+                        if(find(entradaSubstrings.begin(), entradaSubstrings.end(), "DATA") != entradaSubstrings.end()) {
+                            contemData = true;
+
+                            if(!toWrite.empty()) {
+                                putLine(arquivoSaida, toWrite);
+                                toWrite.clear();
+                            }
+                            break;
+                        }
                     }
                 } else if(macros.find(str) != macros.end()) {
                     //expansão de macros
                     vector<string> args = substrings(macros[str][0]);
                     int numArgs = args.size();
                     if(tam != numArgs + 1) {
-                        cout << "NumArgs = " << numArgs << "\ttam = " << tam << endl;
                         cout << "Erro! Chamada da macro " << str << " com número incorreto de argumentos!";
                         arquivoEntrada.seekg(pos);
                         return -1;
@@ -492,9 +401,9 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
 
                     macroArgs.clear();
                 } else {
-                    cout << "Instrução " << str << " não identificada!";
-                    arquivoEntrada.seekg(pos);
-                    return -1;
+                    for(string s : entradaSubstrings) {
+                        toWrite.push_back(s);
+                    }
                 }
 
                 if(!toWrite.empty()) {
@@ -537,33 +446,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                         return -1;
                     }
 
-                    str.erase(str.end() - 1);
-
-                    if(encontrouLabel) {
-                        cout << "Erro! Dois rótulos seguidos encontrados!" << endl;
-                        arquivoEntrada.seekg(pos);
-                        return -1;
-                    }
-
-                    if(str[0] >= '0' && str[0] <= '9') {
-                        cout << "Erro! Rótulo iniciado por dígito numérico." << endl;
-                        arquivoEntrada.seekg(pos);
-                        return -1;
-                    }
-
-                    for(char c : str) {
-                        if(!(c >= 'A' && c <= 'Z') && !( c >= '0' && c <= '9') && c != '_') {
-                            cout << "Erro! Rótulo com caracteres não permitidos!" << endl;
-                            arquivoEntrada.seekg(pos);
-                            return -1;
-                        }
-                    }
-
-                    if(find(labels.begin(), labels.end(), str) != labels.end()) {
-                        cout << "Erro! Redefinição de rótulo!" << endl;
-                        arquivoEntrada.seekg(pos);
-                        return -1;
-                    }
+                    str.pop_back();
 
                     encontrouLabel = true;
                     labels.push_back(str);
@@ -582,11 +465,6 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                     }
                     encontrouIf = false;
 
-                    if(eInstrucao(str)) {
-                        cout << "Erro! Instrução dentro da seção de dados!" << endl;
-                        return -1;
-                    }
-
                     if(eDiretiva(str)) {
 
                         if(str.compare("CONST") == 0 && tam == 3) { //checa se diretiva const veio no formato CONST +/- valor em vez de const valor
@@ -601,24 +479,6 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
                             entradaSubstrings[1] = sinal.append(entradaSubstrings[2]);
                             entradaSubstrings.pop_back();
                             tam--;
-                        }
-
-                        if(str.compare("SECTION") == 0) {
-                            cout << "Erro! Só devem existir duas diretivas SECTION!" << endl;
-                            arquivoEntrada.seekg(pos);
-                            return -1;
-                        }
-                        if(!encontrouLabel) {
-                            cout << "Erro! Diretivas na seção de dados devem ter rótulos!" << endl;
-                            return -1;
-                        }
-
-                        int tamDir = diretivas[str]->getNumOperandos() + 1;
-
-                        if(tam != tamDir) {
-                            cout << "Erro! Diretiva " << str << " com número incorreto de operandos!" << endl;
-                            arquivoEntrada.seekg(pos);
-                            return -1;
                         }
 
                         ultimaLabel.push_back(':');
@@ -643,7 +503,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida) {
     return 0;
 }
 
-int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo) {
+int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, std::map<std::string, Instrucao*>& instrucoes, std::map<std::string, Diretiva*>& diretivas) {
 
     int pos = arquivoEntrada.tellg();
     string linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
@@ -678,12 +538,6 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo) {
 
                 if(eInstrucao(str)) {
                     //tratamento de instruções
-                    int tamInst = instrucoes[str]->getTam();
-                    if(tam != tamInst) {
-                        cout << "Erro! Número de operandos da instrução " << str << " incorreto!" << endl;
-                        arquivoEntrada.seekg(pos);
-                        return -1;
-                    }
 
                     string linha = "";
 
@@ -713,16 +567,9 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo) {
 
                 } else if(eDiretiva(str)) {
                     //tratamento de diretivas
-                    int tamDir = diretivas[str]->getNumOperandos() + 1;
 
                     if(str.compare("MACRO") == 0) {
                         cout << "Erro! Definição de macro dentro de outra definição de macro!" << endl;
-                        arquivoEntrada.seekg(pos);
-                        return -1;
-                    }
-
-                    if(tam != tamDir) {
-                        cout << "Erro! Número de operandos da diretiva incorreto!" << endl;
                         arquivoEntrada.seekg(pos);
                         return -1;
                     }
@@ -747,9 +594,32 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo) {
                         ifVerdadeiro = val != 0;
                     }
                 } else {
-                    cout << "Instrução " << str << " não identificada!";
-                    arquivoEntrada.seekg(pos);
-                    return -1;
+                    //Supondo que instrução não reconhecida é válida
+                    string linha = "";
+
+                    for(auto it = entradaSubstrings.begin(); it != entradaSubstrings.end(); it++) {
+                        string s = *it;
+                        string aux = s;
+                        bool comVirgula = false;
+
+                        if(s.back() == ',') {
+                            comVirgula = true;
+                            s.pop_back();
+                        }
+
+                        if(macroArgs.find(s) != macroArgs.end()) {
+                            aux = macroArgs[s];
+                            if(comVirgula)
+                                aux.push_back(',');
+                        }
+
+                        linha.append(aux);
+                        if(it != entradaSubstrings.end() - 1)
+                            linha.push_back(SPACE);
+                    }
+
+                    if(!linha.empty())
+                        macroCorpo.push_back(linha);
                 }
             }
         }

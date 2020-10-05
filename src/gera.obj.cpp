@@ -20,17 +20,20 @@ using std::map;
 using std::vector;
 
 map<string, int> tabelaLabels;
-map<string, Diretiva*> dirs     = inicializaDiretivas();
-map<string, Instrucao*> insts   = inicializaInstrucoes();
 
 int mainObj(string nomeArquivoEntrada, fstream& arquivoEntrada) {
+    
+    map<string, Diretiva*> diretivas      = inicializaDiretivas();
+    map<string, Instrucao*> instrucoes    = inicializaInstrucoes();
 
     string nomeArquivoSaida = alteraExtensaoNomeArquivo(nomeArquivoEntrada, "obj");
 
     fstream arquivoSaida;
     arquivoSaida.open(nomeArquivoSaida, fstream::in | fstream::out | fstream::trunc);
 
-    if(!arquivoSaida.is_open() || arquivoSaida.bad())  {
+    if(!arquivoSaida.is_open() || arquivoSaida.bad()) {
+        deletaDiretivas(diretivas);
+        deletaInstrucoes(instrucoes);
         cerr << "Erro ao criar arquivo " << nomeArquivoSaida << endl;
         return -1;
     }
@@ -39,7 +42,9 @@ int mainObj(string nomeArquivoEntrada, fstream& arquivoEntrada) {
 
     cout << "Primeira passagem..." << endl;
 
-    if(primeiraPassagem(arquivoEntrada) != 0) {
+    if(primeiraPassagem(arquivoEntrada, instrucoes, diretivas) != 0) {
+        deletaDiretivas(diretivas);
+        deletaInstrucoes(instrucoes);
         cout << "Erro ao executar primeira passagem!" << endl;
         return -1;
     }
@@ -58,26 +63,33 @@ int mainObj(string nomeArquivoEntrada, fstream& arquivoEntrada) {
     
     cout << "Segunda passagem..." << endl;
     
-    if(segundaPassagem(arquivoEntrada, arquivoSaida) != 0) {
+    if(segundaPassagem(arquivoEntrada, arquivoSaida, instrucoes, diretivas) != 0) {
+        deletaDiretivas(diretivas);
+        deletaInstrucoes(instrucoes);
         cout << "Erro ao executar segunda passagem!" << endl;
         return -1;
     }
 
     cout << "Segunda passagem finalizada!" << endl;
 
+    deletaDiretivas(diretivas);
+    deletaInstrucoes(instrucoes);
+
     arquivoSaida.close();
 
     return 0;
 }
 
-int primeiraPassagem(fstream& arquivoEntrada) {
+int primeiraPassagem(fstream& arquivoEntrada, map<string, Instrucao*>& instrucoes, map<string, Diretiva*>& diretivas) {
 
     string linhaEntrada;
     vector<string> entradaSubstrings;
     string str;
-    int PC = 0;
+    int pos, PC = 0;
+    bool encontrouLabel = false, sectionText = false, sectionData = false;
 
     do {
+        pos = arquivoEntrada.tellg();
         linhaEntrada = getLineModificado(arquivoEntrada);
         entradaSubstrings = substrings(linhaEntrada);
         int tam = entradaSubstrings.size();
@@ -88,6 +100,45 @@ int primeiraPassagem(fstream& arquivoEntrada) {
             if(str.back() == ':') {
                 str.pop_back();
 
+                if(str.empty()) {
+                    cout << "Erro! Rótulo vazio!" << endl;
+                    arquivoEntrada.seekg(pos);
+                    return -1;
+                }
+
+                if(eDiretiva(str) || eInstrucao(str)) {
+                    cout << "Erro! Rótulo proibido: palavra reservada!" << endl;
+                    arquivoEntrada.seekg(pos);
+                    return -1;
+                }
+
+                if(encontrouLabel) {
+                    cout << "Erro! Dois rótulos seguidos encontrados!" << endl;
+                    arquivoEntrada.seekg(pos);
+                    return -1;
+                }
+
+                if(str[0] >= '0' && str[0] <= '9') {
+                    cout << "Erro! Rótulo iniciado por dígito numérico." << endl;
+                    arquivoEntrada.seekg(pos);
+                    return -1;
+                }
+
+                for(char c : str) {
+                    if(!(c >= 'A' && c <= 'Z') && !( c >= '0' && c <= '9') && c != '_') {
+                        cout << "Erro! Rótulo com caracteres não permitidos!" << endl;
+                        arquivoEntrada.seekg(pos);
+                        return -1;
+                    }
+                }
+
+                if(tabelaLabels.find(str) != tabelaLabels.end()) {
+                    cout << "Erro! Redefinição de rótulo!" << endl;
+                    arquivoEntrada.seekg(pos);
+                    return -1;
+                }
+
+
                 tabelaLabels[str] = PC;
                 tam--;
                 entradaSubstrings.erase(entradaSubstrings.begin());
@@ -96,9 +147,66 @@ int primeiraPassagem(fstream& arquivoEntrada) {
             if(tam > 0) {
                 str = entradaSubstrings[0];
                 if (eInstrucao(str)) {
-                    PC += insts[str]->getTam();
+
+                    if(sectionData) {
+                        cout << "Erro! Instrução na seção de dados!" << endl;
+                        arquivoEntrada.seekg(pos);
+                        return -1;
+                    }
+                    
+
+                    int tamInst = instrucoes[str]->getTam();
+
+                    if(tam != tamInst) {
+                        cout << "Erro! Número de operandos da instrução " << str << " incorreto!" << endl;
+                        arquivoEntrada.seekg(pos);
+                        return -1;
+                    }
+
+                    PC += instrucoes[str]->getTam();
+                    encontrouLabel = false;
                 } else if(eDiretiva(str)) {
-                    PC += dirs[str]->getTam();
+
+                    int tamDir = diretivas[str]->getNumOperandos() + 1;
+
+                    if(tam != tamDir) {
+                        cout << "Erro! Número de operandos da diretiva " << str << " incorreto!" << endl;
+                        arquivoEntrada.seekg(pos);
+                        return -1;
+                    }
+
+
+                    if(str.compare("SECTION") == 0) {
+                        if(entradaSubstrings[1].compare("DATA") == 0) {
+                            if(sectionData) {
+                                cout << "Erro! Redefinição da seção de dados!" << endl;
+                                arquivoEntrada.seekg(pos);
+                                return -1;
+                            }
+                            sectionText = false;
+                            sectionData = true;
+                        } else if (entradaSubstrings[1].compare("TEXT") == 0) {
+                            if(sectionText) {
+                                cout << "Erro! Redefinição da seção de texto!" << endl;
+                                arquivoEntrada.seekg(pos);
+                                return -1;
+                            }
+                            sectionText = true;
+                            sectionData = false;
+                        } else {
+                            cout << "Erro! Diretiva SECTION deve vir acompanhada de TEXT ou DATA!" << endl;
+                            arquivoEntrada.seekg(pos);
+                            return -1;
+                        }
+                        continue;
+                    }
+
+                    PC += diretivas[str]->getTam();
+                    encontrouLabel = false;
+                } else {
+                    cout << "Erro! Instrução " << str << " não identificada!" << endl;
+                    arquivoEntrada.seekg(pos);
+                    return -1;
                 }
             }
         }
@@ -108,13 +216,12 @@ int primeiraPassagem(fstream& arquivoEntrada) {
     return 0;
 }
 
-int segundaPassagem(fstream& arquivoEntrada, fstream& arquivoSaida) {
+int segundaPassagem(fstream& arquivoEntrada, fstream& arquivoSaida, map<string, Instrucao*>& instrucoes, map<string, Diretiva*>& diretivas) {
 
-    string linhaEntrada;
-    vector<string> entradaSubstrings;
+    string linhaEntrada;// = toupperStr(getLineModificado(arquivoEntrada));
+    vector<string> entradaSubstrings;// = substrings(linhaEntrada);
     vector<int> toWrite;
     string str;
-
 
     do {
         linhaEntrada = getLineModificado(arquivoEntrada);
@@ -133,8 +240,8 @@ int segundaPassagem(fstream& arquivoEntrada, fstream& arquivoSaida) {
                 str = entradaSubstrings[0];
 
                 if (eInstrucao(str)) {
-                    int tamInst = insts[str]->getTam();
-                    toWrite.push_back(insts[str]->getCod());
+                    int tamInst = instrucoes[str]->getTam();
+                    toWrite.push_back(instrucoes[str]->getCod());
                     for(int i = 1; i < tamInst; i++) {
 
                         string operando = entradaSubstrings[i];
