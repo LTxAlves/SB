@@ -62,13 +62,13 @@ Para utilização do projeto, você vai precisar dos seguintes:
    2. Digite o comando `make release`
    3. Aguarde a compilação do código
    4. Utilize o executável `./montador -p arquivo_de_entrada.asm` mudando o nome do arquivo de entrada para o nome utilizado por você (podendo utilizar caminho relativo a ele, isto é, `../arquivo.asm` levaria ao diretório superior, ou o caminho absoluto, como `/home/username/Documents/arquivo.asm`)
-       - Ao finalizar o pré-processamento, será gerado um arquivo com nome igual no mesmo diretório do arquivo de entrada, desta vez com extensão `.asm`
+       - Ao finalizar o pré-processamento, será gerado um arquivo com nome igual no mesmo diretório do arquivo de entrada, desta vez com extensão `.pre`
    5. Para realizar a montagem, utilize o comando `./montador -o arquivo_de_entrada.pre`, sendo `arquivo_de_entrada.pre` o arquivo pré-processado gerado pelo passo 4
        - Ao finalizar a montagem, será gerado um arquivo de mesmo nome e no mesmo diretório que o arquivo pré-processado, desta vez com extensão `.obj`
 
 ### Limitações
 
-1. Como foi escolhido o tratamento de macros, o programa não foi devidamente preparado para tratar erros de sintaxe/semântica
+1. Como foi escolhido o tratamento de macros, o programa não foi devidamente preparado para tratar erros léxicos ou de sintaxe/semântica
    - Alguns erros (relativos a diretivas MACRO, EQU e IF) são detectados durante o pré-processamento, impedindo a continuação do programa
    - Alguns erros são identificados durante a montagem, porém o programa para a execução caso encontre algum erro, mostrando apenas o primeiro erro encontrado.
 2. Instruções e diretivas com recebimento de argumentos no arquivo em pseudo assembly de entrada, conforme definido nas instruções para o trabalho, devem vir devidamente separadas (isto é, ao menos um espaço ou tabulação entre elas e sem espaços em branco antes da vírgula)
@@ -76,13 +76,12 @@ Para utilização do projeto, você vai precisar dos seguintes:
    - Exemplo 2: `LABEL: MACRO &A,&B` ou `LABEL: MACRO &A ,&B` estão incorretos, enquanto `LABEL: MACRO &A, &B` ou `LABEL: MACRO &A,`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`&B` estão corretos.
      - O mesmo vale para a chamada da macro: `LABEL A, B` é aceito, mas `LABEL A,B` não
 3. Conforme na definição do trabalho, o programa não diferencia maiúsculas de minúsculas, isto é, `Label:`, `LABEL:`, `label:`, `LaBeL:` ou variações são considerados rótulos iguais. O mesmo vale para instruções e diretivas.
-4. Alguma escolhas de projeto foram feitas devido à não definição específica da linguagem de pseudo assembly:
+4. Alguma lmitações se devem às especificações do trabalho ou à escolha devido à falta de especificações a respeito das questões:
     - Macros não podem incluir rótulos dentro do seu corpo de forma a evitar repetição de rótulos entre várias chamadas da mesma macro
     - Diretivas do tipo IF e a linha seguinte as diretivas IF não podem possuir rótulos, de forma a não haver referências à linhas possivelmente deletadas durante pré-processamento
     - A quebra de linha (LF, CR ou CRLF) é considerada como o separador de instruções. Sendo assim, cada instrução/diretiva deve vir em uma linha sem outras instruções/diretivas e com todos os seus operandos
     - Macros não podem conter chamdas a outras macros dentro do seu corpo
     - Macros não podem conter definições de outras macros dentro do seu corpo
-
 
 ## Feito com
 
