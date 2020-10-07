@@ -31,6 +31,7 @@ map<string, string> equs;
 vector<string> labels;
 map<string, vector<string>> macros;
 map<string, string> macroArgs;
+map<string, vector<string>> macroLabels;
 
 int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
 
@@ -170,25 +171,9 @@ int mapeiaEqus(fstream& arquivoEntrada) {
 
 int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string, Instrucao*>& instrucoes, std::map<std::string, Diretiva*>& diretivas) {
 
-    int pos;// = arquivoEntrada.tellg();
-    string linhaEntrada;// = toupperStr(getLineModificado(arquivoEntrada));
-    vector<string> entradaSubstrings;// = substrings(linhaEntrada);
-    int tam;// = entradaSubstrings.size();
-
-    /*if(tam > 0) {
-        for(int i = 0; i < tam; i++) {
-            string s = entradaSubstrings[i];
-            if(equs.find(s) != equs.end())
-                entradaSubstrings[i] = equs[s];
-        }
-    }
-
-    if(entradaSubstrings.size() == 2 && entradaSubstrings[0].compare("SECTION") == 0 && entradaSubstrings[1].compare("TEXT") == 0) {
-        arquivoSaida << "SECTION TEXT" << endl;
-    }else {
-        cout << "Erro! SECTION TEXT deve existir em linha sozinha e estar antes de SECTION DATA." << endl;
-        return -1;
-    }*/
+    int pos, tam, contadorMacros = 0;
+    string linhaEntrada;
+    vector<string> entradaSubstrings;
 
     string ultimaLabel;
     bool encontrouLabel = false, encontrouIf = false, ifVerdadeiro = false, contemData = false;
@@ -324,9 +309,10 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
                         entradaSubstrings = substrings(linhaEntrada);
                         
                         vector<string>& macroCorpo = macros[ultimaLabel];
+                        vector<string>& macroLbls = macroLabels[ultimaLabel];
                         arquivoEntrada.seekg(pos);
 
-                        if(mapeiaMacro(arquivoEntrada, macroCorpo, instrucoes, diretivas) != 0)
+                        if(mapeiaMacro(arquivoEntrada, macroCorpo, macroLbls, instrucoes, diretivas) != 0)
                             return -1;
 
                         macroArgs.clear();
@@ -350,7 +336,10 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
                     //expansão de macros
                     vector<string> args = substrings(macros[str][0]);
                     int numArgs = args.size();
+                    ++contadorMacros;
+
                     if(tam != numArgs + 1) {
+                        cout << "Tam = " << tam << " numArgs + 1 = " << numArgs + 1 << endl;
                         cout << "Erro! Chamada da macro " << str << " com número incorreto de argumentos!";
                         arquivoEntrada.seekg(pos);
                         return -1;
@@ -366,30 +355,51 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
 
                     vector<string> macroAtual = macros[str];
                     int tamMacro = macroAtual.size();
+                    vector<string> macroLbls = macroLabels[str];
+
                     for(int i = 1; i < tamMacro; i++ ){
                         vector<string> subst = substrings(macroAtual[i]);
                         bool temVirgula = false;
 
-                        for(string str : subst) {
-                            if (str.front() == '#') {
+                        for(string umaString : subst) {
+                            if (umaString.front() == '#') {
                                 string aux;
 
-                                if(str.back() == ',') {
-                                    str.pop_back();
+                                if(umaString.back() == ',') {
+                                    umaString.pop_back();
                                     temVirgula = true;
                                 }
 
-                                aux = macroArgs[str];
+                                aux = macroArgs[umaString];
 
                                 if(temVirgula) {
                                     aux.push_back(',');
                                     temVirgula = false;
                                 }
 
+                                if(aux.front() == '&') {
+                                    aux.erase(aux.begin());
+                                }
+
                                 toWrite.push_back(aux);
 
+                            } else if(umaString.back() == ':') {
+                                umaString.pop_back();
+                                umaString.push_back('_');
+                                umaString.append(str);
+                                umaString.append(to_string(contadorMacros));
+                                umaString.push_back(':');
+
+                                toWrite.push_back(umaString);
+                            } else if(find(macroLbls.begin(), macroLbls.end(), umaString) != macroLbls.end()) {
+                                umaString.push_back('_');
+                                umaString.append(str);
+                                umaString.append(to_string(contadorMacros));
+
+                                toWrite.push_back(umaString);
+
                             } else {
-                                toWrite.push_back(str);
+                                toWrite.push_back(umaString);
                             }
                         }
 
@@ -503,13 +513,13 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
     return 0;
 }
 
-int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, std::map<std::string, Instrucao*>& instrucoes, std::map<std::string, Diretiva*>& diretivas) {
+int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<string>& macroLbls, map<string, Instrucao*>& instrucoes, map<string, Diretiva*>& diretivas) {
 
     int pos = arquivoEntrada.tellg();
     string linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
     vector<string> entradaSubstrings = substrings(linhaEntrada);
-
     bool encontrouLabel = false, encontrouIf = false, ifVerdadeiro = false;
+    string ultimaLabel;
 
     while(linhaEntrada.find("ENDMACRO") == string::npos) {
         if(arquivoEntrada.eof() || arquivoEntrada.bad()) {
@@ -520,12 +530,18 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, std::map<st
 
         if(tam > 0) {
             string str = entradaSubstrings[0];
+            string linha = "";
+
             //linha com label
             if(str.back() == ':') {
-                cout << "Erro! Definição de label dentro de macro!" << endl;
-                arquivoEntrada.seekg(pos);
-                return -1;
+                encontrouLabel = true;
+                ultimaLabel = str;
+                tam--;
+                entradaSubstrings.erase(entradaSubstrings.begin());
+                str.pop_back();
+                macroLbls.push_back(str);
             }
+
             if(tam > 0) {
                 string str;
 
@@ -539,7 +555,10 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, std::map<st
                 if(eInstrucao(str)) {
                     //tratamento de instruções
 
-                    string linha = "";
+                    if(encontrouLabel) {
+                        linha.append(ultimaLabel + SPACE);
+                        encontrouLabel = false;
+                    }
 
                     for(auto it = entradaSubstrings.begin(); it != entradaSubstrings.end(); it++) {
                         string s = *it;
@@ -595,7 +614,6 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, std::map<st
                     }
                 } else {
                     //Supondo que instrução não reconhecida é válida
-                    string linha = "";
 
                     for(auto it = entradaSubstrings.begin(); it != entradaSubstrings.end(); it++) {
                         string s = *it;

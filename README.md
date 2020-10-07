@@ -28,6 +28,8 @@ Recomenda-se o uso de um visualizador de markdown para a leitura deste documento
 
 * Entre as opções de projeto disponíveis (detecção de erros ou tratamento de macros), foi optado realizar o tratamento de macros.
 * Não há limitação na quantidade de macros ou de argumentos para cada macro do arquivo de entrada.
+* Ao criar rótulos dentro de uma macro, estes serão substituídos a cada chamda da macro
+  * A substituição ocorre da seguinte forma: Supondo um rótulo `rot:` dentro da macro `umamacro: macro &arg`, o pré-processamento irá gerar o rótulo `ROT_UMAMACRO#` onde `#` é o número correspondente ao contador de chamadas de macro, permitindo que uma mesma macro seja chamada diversas vezes
 
 ## Começando
 
@@ -77,7 +79,6 @@ Para utilização do projeto, você vai precisar dos seguintes:
      - O mesmo vale para a chamada da macro: `LABEL A, B` é aceito, mas `LABEL A,B` não
 3. Conforme na definição do trabalho, o programa não diferencia maiúsculas de minúsculas, isto é, `Label:`, `LABEL:`, `label:`, `LaBeL:` ou variações são considerados rótulos iguais. O mesmo vale para instruções e diretivas.
 4. Alguma lmitações se devem às especificações do trabalho ou à escolha devido à falta de especificações a respeito das questões:
-    - Macros não podem incluir rótulos dentro do seu corpo de forma a evitar repetição de rótulos entre várias chamadas da mesma macro
     - Diretivas do tipo IF e a linha seguinte as diretivas IF não podem possuir rótulos, de forma a não haver referências à linhas possivelmente deletadas durante pré-processamento
     - A quebra de linha (LF, CR ou CRLF) é considerada como o separador de instruções. Sendo assim, cada instrução/diretiva deve vir em uma linha sem outras instruções/diretivas e com todos os seus operandos
     - Macros não podem conter chamdas a outras macros dentro do seu corpo
