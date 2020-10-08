@@ -504,13 +504,17 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
 
 int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<string>& macroLbls, map<string, Instrucao*>& instrucoes, map<string, Diretiva*>& diretivas) {
 
-    int pos = arquivoEntrada.tellg();
-    string linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
-    vector<string> entradaSubstrings = substrings(linhaEntrada);
+    int pos;
+    string linhaEntrada;
+    vector<string> entradaSubstrings;
     bool encontrouLabel = false, encontrouIf = false, ifVerdadeiro = false;
     string ultimaLabel;
 
-    while(linhaEntrada.find("ENDMACRO") == string::npos) {
+    do {
+        pos = arquivoEntrada.tellg();
+        linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
+        entradaSubstrings = substrings(linhaEntrada);
+
         if(arquivoEntrada.eof() || arquivoEntrada.bad()) {
             cout << "Erro! Diretiva ENDMACRO não encontrada!" << endl;
             return -1;
@@ -532,14 +536,13 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<stri
             }
 
             if(tam > 0) {
-                string str;
+                string str = entradaSubstrings[0];
 
-                if(!encontrouIf || ifVerdadeiro) {
-                    str = entradaSubstrings[0];
-                } else {
-                    str = "";
+                if(encontrouIf && !ifVerdadeiro) {
+                    encontrouIf = false;
+                    encontrouLabel = false;
+                    continue;
                 }
-                encontrouIf = false;
 
                 if(eInstrucao(str)) {
                     //tratamento de instruções
@@ -576,6 +579,10 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<stri
                 } else if(eDiretiva(str)) {
                     //tratamento de diretivas
 
+                    if(str.compare("ENDMACRO") == 0) {
+                        break;
+                    }
+
                     if(str.compare("MACRO") == 0) {
                         cout << "Erro! Definição de macro dentro de outra definição de macro!" << endl;
                         arquivoEntrada.seekg(pos);
@@ -603,6 +610,7 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<stri
                 } else {
                     //Supondo que instrução não reconhecida é válida
 
+
                     for(auto it = entradaSubstrings.begin(); it != entradaSubstrings.end(); it++) {
                         string s = *it;
                         string aux = s;
@@ -629,11 +637,7 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<stri
                 }
             }
         }
-
-        pos = arquivoEntrada.tellg();
-        linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
-        entradaSubstrings = substrings(linhaEntrada);
-    }
+    } while(linhaEntrada.find("ENDMACRO") == string::npos);
 
     if(entradaSubstrings.size() != 1) {
         cout << "Erro! Diretiva ENDMACRO deve vir sozinha na linha!" << endl;
