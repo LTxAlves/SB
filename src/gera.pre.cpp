@@ -199,12 +199,6 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
             //linha com label
             if(str.back() == ':') {
 
-                if(encontrouIf) {
-                    cout << "Erro! Rótulo dentro de diretiva IF!" << endl;
-                    arquivoEntrada.seekg(pos);
-                    return -1;
-                }
-
                 str.pop_back();
 
                 encontrouLabel = true;
@@ -216,12 +210,13 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
             if(tam > 0) {
                 string str;
 
-                if(!encontrouIf || ifVerdadeiro) {
-                    str = entradaSubstrings[0];
-                } else {
-                    str = "";
+                if(encontrouIf && !ifVerdadeiro) {
+                    encontrouIf = false;
+                    encontrouLabel = false;
+                    continue;
                 }
-                encontrouIf = false;
+
+                str = entradaSubstrings[0];
 
                 if(eInstrucao(str)) {
                     //tratamento de instruções
@@ -243,20 +238,13 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
                         encontrouIf = true;
                         
                         if(encontrouLabel) {
-                            cout << "Erro! Rótulo para diretiva IF!" << endl;
-                            arquivoEntrada.seekg(pos);
-                            return -1;
+                            toWrite.push_back(ultimaLabel);
+                            encontrouLabel = false;
                         }
 
                         string toCheck = entradaSubstrings[1];
-                        if(equs.find(toCheck) == equs.end()) {
-                            cout << "Erro! Diretiva IF com rótulo inválido!" << endl;
-                            arquivoEntrada.seekg(pos);
-                            return -1;
-                        }
 
-                        int val = stoi(equs[toCheck]);
-                        ifVerdadeiro = val != 0;
+                        ifVerdadeiro = (stoi(toCheck) != 0);
                     } else if(str.compare("MACRO") == 0) {
                         if(!encontrouLabel) {
                             cout << "Erro! Macro sem rótulo!" << endl;
@@ -334,6 +322,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
                     }
                 } else if(macros.find(str) != macros.end()) {
                     //expansão de macros
+
                     vector<string> args = substrings(macros[str][0]);
                     int numArgs = args.size();
                     ++contadorMacros;
@@ -450,12 +439,6 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
                 //linha com label
                 if(str.back() == ':') {
 
-                    if(encontrouIf) {
-                        cout << "Erro! Rótulo dentro de diretiva IF!" << endl;
-                        arquivoEntrada.seekg(pos);
-                        return -1;
-                    }
-
                     str.pop_back();
 
                     encontrouLabel = true;
@@ -477,26 +460,32 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
 
                     if(eDiretiva(str)) {
 
-                        if(str.compare("CONST") == 0 && tam == 3) { //checa se diretiva const veio no formato CONST +/- valor em vez de const valor
-                            string sinal = entradaSubstrings[1];
-
-                            if(sinal.compare("+") != 0 && sinal.compare("-") != 0) {
-                                cout << "Erro nos argumentos da diretiva CONST!" << endl;
-                                arquivoEntrada.seekg(pos);
-                                return -1;
+                        if(str.compare("SECTION") == 0) {
+                            cout << "Erro! Diretiva SECTION dentro da seção de dados!" << endl;
+                            return -1;
+                        }
+                        if(str.compare("IF") == 0) {
+                            encontrouIf = true;
+                            
+                            if(encontrouLabel) {
+                                toWrite.push_back(ultimaLabel);
+                                encontrouLabel = false;
                             }
 
-                            entradaSubstrings[1] = sinal.append(entradaSubstrings[2]);
-                            entradaSubstrings.pop_back();
-                            tam--;
-                        }
+                            string toCheck = entradaSubstrings[1];
 
-                        ultimaLabel.push_back(':');
-                        toWrite.push_back(ultimaLabel);
-                        encontrouLabel = false;
+                            ifVerdadeiro = (stoi(toCheck) != 0);
+                        } else {
 
-                        for(string s: entradaSubstrings) {
-                            toWrite.push_back(s);
+                            if(encontrouLabel) {
+                                ultimaLabel.push_back(':');
+                                toWrite.push_back(ultimaLabel);
+                                encontrouLabel = false;
+                            }
+
+                            for(string s: entradaSubstrings) {
+                                toWrite.push_back(s);
+                            }
                         }
                     }
 
@@ -597,9 +586,8 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<stri
                         encontrouIf = true;
                         
                         if(encontrouLabel) {
-                            cout << "Erro! Rótulo para diretiva IF!" << endl;
-                            arquivoEntrada.seekg(pos);
-                            return -1;
+                            macroLbls.push_back(ultimaLabel);
+                            encontrouLabel = false;
                         }
 
                         string toCheck = entradaSubstrings[1];
