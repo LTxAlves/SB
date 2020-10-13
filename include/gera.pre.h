@@ -4,7 +4,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 #include "instrucao.h"
 #include "diretiva.h"
@@ -31,7 +31,7 @@ int mapeiaEqus(std::fstream& arquivoEntrada);
  * @param diretivas mapa de diretivas
  * @returns -1 se erro, 0 caso contrário
  * */
-int geraPre(std::fstream& arquivoEntrada, std::fstream& arquivoSaida, std::map<std::string, Instrucao*>& instrucoes, std::map<std::string, Diretiva*>& diretivas);
+int geraPre(std::fstream& arquivoEntrada, std::fstream& arquivoSaida, std::unordered_map<std::string, Instrucao*>& instrucoes, std::unordered_map<std::string, Diretiva*>& diretivas);
 
 /**
  * Cria a tabela de definição de macro
@@ -42,4 +42,4 @@ int geraPre(std::fstream& arquivoEntrada, std::fstream& arquivoSaida, std::map<s
  * @param diretivas mapa de diretivas
  * @returns -1 se erro, 0 caso contrário
  * */
-int mapeiaMacro(std::fstream& arquivoEntrada, std::vector<std::string>& macroCorpo, std::vector<std::string>& macroLbls, std::map<std::string, Instrucao*>& instrucoes, std::map<std::string, Diretiva*>& diretivas);
+int mapeiaMacro(std::fstream& arquivoEntrada, std::vector<std::string>& macroCorpo, std::vector<std::string>& macroLbls, std::unordered_map<std::string, Instrucao*>& instrucoes, std::unordered_map<std::string, Diretiva*>& diretivas);

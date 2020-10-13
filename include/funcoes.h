@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <map>
+#include <unordered_map>
 
 #include "instrucao.h"
 #include "diretiva.h"
@@ -25,25 +25,25 @@ bool acabaCom(std::string const &stringOrigem, std::string const &final);
  * Inicializa vetor com instruções de pseudo assembly
  * @returns vetor ordenado de instruções
  * */
-std::map<std::string, Instrucao*> inicializaInstrucoes();
+std::unordered_map<std::string, Instrucao*> inicializaInstrucoes();
 
 /**
  * Libera a memória alocada para instruções
  * @param intrucoes mapa com as instruções geradas por inicializaInstrucoes()
  * */
-void deletaInstrucoes(std::map<std::string, Instrucao*>& instrucoes);
+void deletaInstrucoes(std::unordered_map<std::string, Instrucao*>& instrucoes);
 
 /**
  * Inicializa vetor com diretivas de pseudo assembly
  * @returns vetor ordenado de diretivas
  * */
-std::map<std::string, Diretiva*> inicializaDiretivas();
+std::unordered_map<std::string, Diretiva*> inicializaDiretivas();
 
 /**
  * Libera a memória alocada para diretivas
  * @param diretivas mapa com as diretivas geradas por inicializaDiretivas()
  * */
-void deletaDiretivas(std::map<std::string, Diretiva*>& diretivas);
+void deletaDiretivas(std::unordered_map<std::string, Diretiva*>& diretivas);
 
 /**
  * Retorna uma linha do arquivo de entrada, parando em CR, LF ou CRLF

@@ -18,7 +18,7 @@ using std::vector;
 
 using std::string;
 
-using std::map;
+using std::unordered_map;
 
 using std::fstream;
 
@@ -34,9 +34,9 @@ bool acabaCom(string const &stringOrigem, string const &final) {
     }
 }
 
-map<string, Instrucao*>  inicializaInstrucoes() {
+unordered_map<string, Instrucao*>  inicializaInstrucoes() {
 
-    map<string, Instrucao*> mapInst;
+    unordered_map<string, Instrucao*> mapInst;
 
     mapInst["ADD"]      = new Instrucao("ADD",    1, 1,  2);
     mapInst["SUB"]      = new Instrucao("SUB",    1, 2,  2);
@@ -56,16 +56,16 @@ map<string, Instrucao*>  inicializaInstrucoes() {
     return mapInst;
 }
 
-void deletaInstrucoes(std::map<std::string, Instrucao*>& instrucoes) {
+void deletaInstrucoes(std::unordered_map<std::string, Instrucao*>& instrucoes) {
 
     for(auto it = instrucoes.begin(); it != instrucoes.end(); it++) {
         delete it->second;
     }
 }
 
-map< string, Diretiva*> inicializaDiretivas() {
+unordered_map< string, Diretiva*> inicializaDiretivas() {
 
-    map<string, Diretiva*> mapDir;
+    unordered_map<string, Diretiva*> mapDir;
 
     mapDir["SECTION"]   = new Diretiva("SECTION",  1, 0);
     mapDir["SPACE"]     = new Diretiva("SPACE",    0, 1);
@@ -78,7 +78,7 @@ map< string, Diretiva*> inicializaDiretivas() {
     return mapDir;
 }
 
-void deletaDiretivas(std::map<std::string, Diretiva*>& diretivas) {
+void deletaDiretivas(std::unordered_map<std::string, Diretiva*>& diretivas) {
 
     for(auto it = diretivas.begin(); it != diretivas.end(); it++) {
         delete it->second;

@@ -1,7 +1,7 @@
 #include "gera.obj.h"
 
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 #include "funcoes.h"
@@ -15,16 +15,16 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-using std::map;
+using std::unordered_map;
 
 using std::vector;
 
-map<string, int> tabelaLabels;
+unordered_map<string, int> tabelaLabels;
 
 int mainObj(string nomeArquivoEntrada, fstream& arquivoEntrada) {
     
-    map<string, Diretiva*> diretivas      = inicializaDiretivas();
-    map<string, Instrucao*> instrucoes    = inicializaInstrucoes();
+    unordered_map<string, Diretiva*> diretivas      = inicializaDiretivas();
+    unordered_map<string, Instrucao*> instrucoes    = inicializaInstrucoes();
 
     string nomeArquivoSaida = alteraExtensaoNomeArquivo(nomeArquivoEntrada, "obj");
 
@@ -80,7 +80,7 @@ int mainObj(string nomeArquivoEntrada, fstream& arquivoEntrada) {
     return 0;
 }
 
-int primeiraPassagem(fstream& arquivoEntrada, map<string, Instrucao*>& instrucoes, map<string, Diretiva*>& diretivas) {
+int primeiraPassagem(fstream& arquivoEntrada, unordered_map<string, Instrucao*>& instrucoes, unordered_map<string, Diretiva*>& diretivas) {
 
     string linhaEntrada;
     vector<string> entradaSubstrings;
@@ -216,7 +216,7 @@ int primeiraPassagem(fstream& arquivoEntrada, map<string, Instrucao*>& instrucoe
     return 0;
 }
 
-int segundaPassagem(fstream& arquivoEntrada, fstream& arquivoSaida, map<string, Instrucao*>& instrucoes, map<string, Diretiva*>& diretivas) {
+int segundaPassagem(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map<string, Instrucao*>& instrucoes, unordered_map<string, Diretiva*>& diretivas) {
 
     string linhaEntrada;// = toupperStr(getLineModificado(arquivoEntrada));
     vector<string> entradaSubstrings;// = substrings(linhaEntrada);

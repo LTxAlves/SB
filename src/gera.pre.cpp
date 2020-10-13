@@ -1,6 +1,6 @@
 #include "gera.pre.h"
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -10,7 +10,7 @@
 #include "instrucao.h"
 #include "diretiva.h"
 
-using std::map;
+using std::unordered_map;
 
 using std::vector;
 
@@ -27,16 +27,16 @@ using std::to_string;
 using std::string;
 using std::stoi;
 
-map<string, string> equs;
+unordered_map<string, string> equs;
 vector<string> labels;
-map<string, vector<string>> macros;
-map<string, string> macroArgs;
-map<string, vector<string>> macroLabels;
+unordered_map<string, vector<string>> macros;
+unordered_map<string, string> macroArgs;
+unordered_map<string, vector<string>> macroLabels;
 
 int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
 
-    map<string, Diretiva*> diretivas      = inicializaDiretivas();
-    map<string, Instrucao*> instrucoes    = inicializaInstrucoes();
+    unordered_map<string, Diretiva*> diretivas      = inicializaDiretivas();
+    unordered_map<string, Instrucao*> instrucoes    = inicializaInstrucoes();
 
     string nomeArquivoSaida = alteraExtensaoNomeArquivo(nomeArquivoEntrada, "pre");
 
@@ -169,7 +169,7 @@ int mapeiaEqus(fstream& arquivoEntrada) {
     return 0;
 }
 
-int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string, Instrucao*>& instrucoes, std::map<std::string, Diretiva*>& diretivas) {
+int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::unordered_map<std::string, Instrucao*>& instrucoes, std::unordered_map<std::string, Diretiva*>& diretivas) {
 
     int pos, tam, contadorMacros = 0;
     string linhaEntrada;
@@ -252,6 +252,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
                             return -1;
                         }
                         if(tam > 1) {
+                            string args;
                             for(int i = 1; i < tam; i++) {
                                 string arg = entradaSubstrings[i];
 
@@ -277,13 +278,9 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
                                     return -1;
                                 }
                                 macroArgs[arg] = varNum;
+                                args.append(varNum).push_back(SPACE);
                             }
-                            string args;
 
-                            for(auto it = macroArgs.begin(); it != macroArgs.end(); it++) {
-                                args.append(it->second);
-                                args.append(" ");
-                            }
                             if(!args.empty()) {
                                 args.pop_back();
                             }
@@ -345,6 +342,12 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
                     vector<string> macroAtual = macros[str];
                     int tamMacro = macroAtual.size();
                     vector<string> macroLbls = macroLabels[str];
+
+                    if(encontrouLabel) {
+                        ultimaLabel.push_back(':');
+                        toWrite.push_back(ultimaLabel);
+                        encontrouLabel = false;
+                    }
 
                     for(int i = 1; i < tamMacro; i++ ){
                         vector<string> subst = substrings(macroAtual[i]);
@@ -502,7 +505,7 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::map<std::string
     return 0;
 }
 
-int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<string>& macroLbls, map<string, Instrucao*>& instrucoes, map<string, Diretiva*>& diretivas) {
+int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<string>& macroLbls, unordered_map<string, Instrucao*>& instrucoes, unordered_map<string, Diretiva*>& diretivas) {
 
     int pos;
     string linhaEntrada;
