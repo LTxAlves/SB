@@ -1,4 +1,4 @@
-#include "gera.pre.h"
+#include "converte_nasm.h"
 
 #include <unordered_map>
 #include <vector>
@@ -33,12 +33,15 @@ unordered_map<string, vector<string>> macros;
 unordered_map<string, string> macroArgs;
 unordered_map<string, vector<string>> macroLabels;
 
-int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
+const char BSS = 'B';
+const char DATA = 'D';
+
+int mainConverte(string nomeArquivoEntrada, fstream& arquivoEntrada) {
 
     unordered_map<string, Diretiva*> diretivas      = inicializaDiretivas();
     unordered_map<string, Instrucao*> instrucoes    = inicializaInstrucoes();
 
-    string nomeArquivoSaida = alteraExtensaoNomeArquivo(nomeArquivoEntrada, "pre");
+    string nomeArquivoSaida = alteraExtensaoNomeArquivo(nomeArquivoEntrada, "s");
 
     fstream arquivoSaida;
     arquivoSaida.open(nomeArquivoSaida, fstream::in | fstream::out | fstream::trunc);
@@ -67,7 +70,7 @@ int mainPre(string nomeArquivoEntrada, fstream& arquivoEntrada) {
     }
     #endif
 
-    if(geraPre(arquivoEntrada, arquivoSaida, instrucoes, diretivas) != 0) {
+    if(geraConvertido(arquivoEntrada, arquivoSaida, instrucoes, diretivas) != 0) {
         arquivoSaida.close();
         deletaDiretivas(diretivas);
         deletaInstrucoes(instrucoes);
@@ -169,18 +172,22 @@ int mapeiaEqus(fstream& arquivoEntrada) {
     return 0;
 }
 
-int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::unordered_map<std::string, Instrucao*>& instrucoes, std::unordered_map<std::string, Diretiva*>& diretivas) {
+int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map<string, Instrucao*>& instrucoes, unordered_map<string, Diretiva*>& diretivas) {
 
     int pos, tam, contadorMacros = 0;
     string linhaEntrada;
     vector<string> entradaSubstrings;
 
     string ultimaLabel;
-    bool encontrouLabel = false, encontrouIf = false, ifVerdadeiro = false, contemData = false;
+    bool encontrouLabel = false, encontrouIf = false, ifVerdadeiro = false, contemData = false, escreveuSecao = false;
     vector<string> toWrite;
+    char secao = BSS;
+
+    toWrite.push_back("global _start\nsection .text\n_start:");
+    putLine(arquivoSaida, toWrite);
+    toWrite.clear();
 
     do {
-        
         pos = arquivoEntrada.tellg();
         linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
         entradaSubstrings = substrings(linhaEntrada);
@@ -226,9 +233,29 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::unordered_map<s
                         toWrite.push_back(ultimaLabel);
                     }
 
-                    for(string s : entradaSubstrings) {
-
-                        toWrite.push_back(s);
+                    //convertendo para nasm
+                    if(str == "ADD") {
+                        toWrite.push_back("add EAX, [" + entradaSubstrings[1] + "]");
+                    } else if (str == "SUB") {
+                        toWrite.push_back("sub EAX, [" + entradaSubstrings[1] + "]");
+                    } else if(str == "COPY") {
+                        toWrite.push_back("mov EBX, [" + entradaSubstrings[1] + "]\nmov [" + entradaSubstrings[2] + "], EBX");
+                    } else if(str == "LOAD") {
+                        toWrite.push_back("mov EAX, [" + entradaSubstrings[1] + "]");
+                    } else if(str == "STORE") {
+                        toWrite.push_back("mov [" + entradaSubstrings[1] + "], EAX");
+                    } else if(str == "STOP") {
+                        toWrite.push_back("mov EAX, 1\nmov EBX, 0\nint 80H");
+                    } else if(str == "JMP") {
+                        toWrite.push_back("jmp " + entradaSubstrings[1]);
+                    } else if(str == "JMPN") {
+                        toWrite.push_back("cmp EAX, 0\nJL " + entradaSubstrings[1]);
+                    } else if(str == "JMPP") {
+                        toWrite.push_back("cmp EAX, 0\nJG " + entradaSubstrings[1]);
+                    } else if(str == "JMPZ") {
+                        toWrite.push_back("cmp EAX, 0\nJE " + entradaSubstrings[1]);
+                    } else {
+                        toWrite.push_back(";Ainda não traduzi isso aqui");
                     }
 
                 } else if(eDiretiva(str)) {
@@ -302,18 +329,9 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::unordered_map<s
 
                         macroArgs.clear();
                     } else if(str.compare("SECTION") == 0){
-                        
-                        for(string s : entradaSubstrings) {
-                            toWrite.push_back(s);
-                        }
 
                         if(find(entradaSubstrings.begin(), entradaSubstrings.end(), "DATA") != entradaSubstrings.end()) {
                             contemData = true;
-
-                            if(!toWrite.empty()) {
-                                putLine(arquivoSaida, toWrite);
-                                toWrite.clear();
-                            }
                             break;
                         }
                     }
@@ -480,15 +498,54 @@ int geraPre(fstream& arquivoEntrada, fstream& arquivoSaida, std::unordered_map<s
                             ifVerdadeiro = (stoi(toCheck) != 0);
                         } else {
 
+                            string s = entradaSubstrings[0];
+
+                            if(s.compare("SPACE") == 0 && secao != BSS) {
+                                secao = BSS;
+                                escreveuSecao = false;
+                            } else if(s.compare("CONST") == 0 && secao != DATA) {
+                                secao = DATA;
+                                escreveuSecao = false;
+                            }
+
+                            if(!escreveuSecao) {
+                                escreveuSecao = true;
+                                if(secao == BSS)
+                                    toWrite.push_back("section .bss");
+                                else
+                                    toWrite.push_back("section .data");
+                            }
+
+                            if(!toWrite.empty()) {
+                                putLine(arquivoSaida, toWrite);
+                                toWrite.clear();
+                            }
+
                             if(encontrouLabel) {
                                 ultimaLabel.push_back(':');
                                 toWrite.push_back(ultimaLabel);
                                 encontrouLabel = false;
                             }
-
-                            for(string s: entradaSubstrings) {
-                                toWrite.push_back(s);
+            
+                            if(secao == BSS) {
+                                toWrite.push_back("resd");
+                                if(entradaSubstrings.size() > 2) {
+                                    cout << "Erro! SPACE com mais de um argumento!" << endl;
+                                    return -1;
+                                }
+                                if(entradaSubstrings.size() == 2)
+                                    toWrite.push_back(entradaSubstrings[1]);
+                                else
+                                    toWrite.push_back("1");
+                            } else {
+                                toWrite.push_back("dd");
+                                if(entradaSubstrings.size() > 2) {
+                                    cout << "Erro! CONST com mais de um argumento!" << endl;
+                                    return -1;
+                                }
+                                toWrite.push_back(entradaSubstrings[1]);
                             }
+
                         }
                     }
 

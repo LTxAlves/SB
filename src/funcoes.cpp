@@ -38,20 +38,24 @@ unordered_map<string, Instrucao*>  inicializaInstrucoes() {
 
     unordered_map<string, Instrucao*> mapInst;
 
-    mapInst["ADD"]      = new Instrucao("ADD",    1, 1,  2);
-    mapInst["SUB"]      = new Instrucao("SUB",    1, 2,  2);
-    mapInst["MULT"]     = new Instrucao("MULT",   1, 3,  2);
-    mapInst["DIV"]      = new Instrucao("DIV",    1, 4,  2);
-    mapInst["JMP"]      = new Instrucao("JMP",    1, 5,  2);
-    mapInst["JMPN"]     = new Instrucao("JMPN",   1, 6,  2);
-    mapInst["JMPP"]     = new Instrucao("JMPP",   1, 7,  2);
-    mapInst["JMPZ"]     = new Instrucao("JMPZ",   1, 8,  2);
-    mapInst["COPY"]     = new Instrucao("COPY",   2, 9,  3);
-    mapInst["LOAD"]     = new Instrucao("LOAD",   1, 10, 2);
-    mapInst["STORE"]    = new Instrucao("STORE",  1, 11, 2);
-    mapInst["INPUT"]    = new Instrucao("INPUT",  1, 12, 2);
-    mapInst["OUTPUT"]   = new Instrucao("OUTPUT", 1, 13, 2);
-    mapInst["STOP"]     = new Instrucao("STOP",   0, 14, 1);
+    mapInst["ADD"]      = new Instrucao("ADD",      1, 1,  2);
+    mapInst["SUB"]      = new Instrucao("SUB",      1, 2,  2);
+    mapInst["MULT"]     = new Instrucao("MULT",     1, 3,  2);
+    mapInst["DIV"]      = new Instrucao("DIV",      1, 4,  2);
+    mapInst["JMP"]      = new Instrucao("JMP",      1, 5,  2);
+    mapInst["JMPN"]     = new Instrucao("JMPN",     1, 6,  2);
+    mapInst["JMPP"]     = new Instrucao("JMPP",     1, 7,  2);
+    mapInst["JMPZ"]     = new Instrucao("JMPZ",     1, 8,  2);
+    mapInst["COPY"]     = new Instrucao("COPY",     2, 9,  3);
+    mapInst["LOAD"]     = new Instrucao("LOAD",     1, 10, 2);
+    mapInst["STORE"]    = new Instrucao("STORE",    1, 11, 2);
+    mapInst["INPUT"]    = new Instrucao("INPUT",    1, 12, 2);
+    mapInst["OUTPUT"]   = new Instrucao("OUTPUT",   1, 13, 2);
+    mapInst["STOP"]     = new Instrucao("STOP",     0, 14, 1);
+    mapInst["C_INPUT"]  = new Instrucao("C_INPUT",  1, 15, 2);
+    mapInst["C_OUTPUT"] = new Instrucao("C_OUTPUT", 1, 16, 2);
+    mapInst["S_INPUT"]  = new Instrucao("S_INPUT",  2, 19, 2);
+    mapInst["S_OUTPUT"] = new Instrucao("S_OUTPUT", 2, 20, 2);
 
     return mapInst;
 }

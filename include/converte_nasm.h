@@ -15,7 +15,7 @@
  * @param arquivoEntrada referência ao arquivo de entrada
  * @returns 0 se executado corretamente, outro número se houve erro
  * */
-int mainPre(std::string nomeArquivoEntrada, std::fstream& arquivoEntrada);
+int mainConverte(std::string nomeArquivoEntrada, std::fstream& arquivoEntrada);
 
 /**
  * Cria map das diretivas EQU
@@ -31,7 +31,7 @@ int mapeiaEqus(std::fstream& arquivoEntrada);
  * @param diretivas mapa de diretivas
  * @returns -1 se erro, 0 caso contrário
  * */
-int geraPre(std::fstream& arquivoEntrada, std::fstream& arquivoSaida, std::unordered_map<std::string, Instrucao*>& instrucoes, std::unordered_map<std::string, Diretiva*>& diretivas);
+int geraConvertido(std::fstream& arquivoEntrada, std::fstream& arquivoSaida, std::unordered_map<std::string, Instrucao*>& instrucoes, std::unordered_map<std::string, Diretiva*>& diretivas);
 
 /**
  * Cria a tabela de definição de macro
