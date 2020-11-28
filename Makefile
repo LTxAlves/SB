@@ -41,7 +41,7 @@ DEP_FILES	=	$(addprefix	$(DEP_PATH)/,$(addsufix	.d,$(FILE_NAMES)))
 OBJ_FILES	=	$(addprefix	$(BIN_PATH)/,$(notdir	$(CPP_FILES:.cpp=.o)))
 
 # Nome do executável
-EXEC = montador
+EXEC = tradutor
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Caso o sistema seja Windows

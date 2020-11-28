@@ -46,7 +46,7 @@ int mainConverte(string nomeArquivoEntrada, fstream& arquivoEntrada) {
     fstream arquivoSaida;
     arquivoSaida.open(nomeArquivoSaida, fstream::in | fstream::out | fstream::trunc);
 
-    if(!arquivoSaida.is_open() || arquivoSaida.bad())  {
+    if (!arquivoSaida.is_open() || arquivoSaida.bad())  {
         cerr << "Erro ao criar arquivo " << nomeArquivoSaida << endl;
         deletaDiretivas(diretivas);
         deletaInstrucoes(instrucoes);
@@ -55,7 +55,7 @@ int mainConverte(string nomeArquivoEntrada, fstream& arquivoEntrada) {
 
     cout << "Gerando arquivo " << nomeArquivoSaida << endl;
 
-    if( mapeiaEqus(arquivoEntrada) != 0 ) {
+    if ( mapeiaEqus(arquivoEntrada) != 0 ) {
         arquivoSaida.close();
         deletaDiretivas(diretivas);
         deletaInstrucoes(instrucoes);
@@ -70,7 +70,7 @@ int mainConverte(string nomeArquivoEntrada, fstream& arquivoEntrada) {
     }
     #endif
 
-    if(geraConvertido(arquivoEntrada, arquivoSaida, instrucoes, diretivas) != 0) {
+    if (geraConvertido(arquivoEntrada, arquivoSaida, instrucoes, diretivas) != 0) {
         arquivoSaida.close();
         deletaDiretivas(diretivas);
         deletaInstrucoes(instrucoes);
@@ -111,15 +111,15 @@ int mapeiaEqus(fstream& arquivoEntrada) {
         entradaSubstrings = substrings(linhaEntrada);
         int tam = entradaSubstrings.size();
 
-        if(tam > 0) {
+        if (tam > 0) {
             str = entradaSubstrings[0];
 
-            if(equs.find(str) != equs.end()) {
+            if (equs.find(str) != equs.end()) {
                 entradaSubstrings[0] = equs[str];
                 str = entradaSubstrings[0];
             }
 
-            if(str.back() == ':') {
+            if (str.back() == ':') {
                 str.pop_back();
 
                 encontrouLabel = true;
@@ -129,22 +129,22 @@ int mapeiaEqus(fstream& arquivoEntrada) {
                 entradaSubstrings.erase(entradaSubstrings.begin());
             }
             
-            if(tam > 0) {
+            if (tam > 0) {
                 str = entradaSubstrings[0];
                 
-                if(str.compare("SECTION") == 0) {
+                if (str.compare("SECTION") == 0) {
                     break;
                 }
 
-                if(str.compare("EQU") == 0) {
+                if (str.compare("EQU") == 0) {
 
-                    if(tam != 2) {
+                    if (tam != 2) {
                         cout << "Erro! EQU com número de operandos incorreto!" << endl;
                         arquivoEntrada.seekg(pos);
                         return -1;
                     }
 
-                    if(!encontrouLabel) {
+                    if (!encontrouLabel) {
                         cout << "Erro! EQU sem rótulo!" << endl;
                         arquivoEntrada.seekg(pos);
                         return -1;
@@ -152,7 +152,7 @@ int mapeiaEqus(fstream& arquivoEntrada) {
 
                     equs[ultimaLabel] = entradaSubstrings[1];
                     encontrouLabel = false;
-                } else if((eDiretiva(str) || eInstrucao(str))) {
+                } else if ((eDiretiva(str) || eInstrucao(str))) {
                     cout << "Erro! Diretiva/Instrução " << str << " fora da seção de instruções!" << endl;
                     arquivoEntrada.seekg(pos);
                     return -1;
@@ -162,7 +162,7 @@ int mapeiaEqus(fstream& arquivoEntrada) {
         }
     } while(!arquivoEntrada.eof() && !arquivoEntrada.bad());
 
-    if(arquivoEntrada.eof() || arquivoEntrada.bad()) {
+    if (arquivoEntrada.eof() || arquivoEntrada.bad()) {
         cout << "Erro! Diretiva SECTION não encontrada!" << endl;
         return -1;
     }
@@ -193,18 +193,18 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
         entradaSubstrings = substrings(linhaEntrada);
         tam = entradaSubstrings.size();
 
-        if(tam > 0) {
+        if (tam > 0) {
             for(int i = 0; i < tam; i++) {
                 string s = entradaSubstrings[i];
-                if(equs.find(s) != equs.end())
+                if (equs.find(s) != equs.end())
                     entradaSubstrings[i] = equs[s];
             }
         }
 
-        if(tam > 0) {
+        if (tam > 0) {
             string str = entradaSubstrings[0];
             //linha com label
-            if(str.back() == ':') {
+            if (str.back() == ':') {
 
                 str.pop_back();
 
@@ -214,10 +214,10 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                 tam--;
                 entradaSubstrings.erase(entradaSubstrings.begin());
             }
-            if(tam > 0) {
+            if (tam > 0) {
                 string str;
 
-                if(encontrouIf && !ifVerdadeiro) {
+                if (encontrouIf && !ifVerdadeiro) {
                     encontrouIf = false;
                     encontrouLabel = false;
                     continue;
@@ -225,46 +225,112 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
 
                 str = entradaSubstrings[0];
 
-                if(eInstrucao(str)) {
+                if (eInstrucao(str)) {
                     //tratamento de instruções
-                    if(encontrouLabel) {
+                    if (encontrouLabel) {
                         encontrouLabel = false;
                         ultimaLabel.push_back(':');
                         toWrite.push_back(ultimaLabel);
                     }
 
+                    string convertido = "";
+
+                    auto it = entradaSubstrings.begin();
+                    it++;
+
                     //convertendo para nasm
-                    if(str == "ADD") {
-                        toWrite.push_back("add EAX, [" + entradaSubstrings[1] + "]");
+                    if (str == "ADD") {
+                        convertido += "add EAX, [" + *it;
+                        if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2; //mover ponteiro para deslocamento
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
+                        } else {
+                            convertido += "]";
+                        }
                     } else if (str == "SUB") {
-                        toWrite.push_back("sub EAX, [" + entradaSubstrings[1] + "]");
-                    } else if(str == "COPY") {
-                        toWrite.push_back("mov EBX, [" + entradaSubstrings[1] + "]\nmov [" + entradaSubstrings[2] + "], EBX");
-                    } else if(str == "LOAD") {
-                        toWrite.push_back("mov EAX, [" + entradaSubstrings[1] + "]");
-                    } else if(str == "STORE") {
-                        toWrite.push_back("mov [" + entradaSubstrings[1] + "], EAX");
-                    } else if(str == "STOP") {
-                        toWrite.push_back("mov EAX, 1\nmov EBX, 0\nint 80H");
-                    } else if(str == "JMP") {
-                        toWrite.push_back("jmp " + entradaSubstrings[1]);
-                    } else if(str == "JMPN") {
-                        toWrite.push_back("cmp EAX, 0\nJL " + entradaSubstrings[1]);
-                    } else if(str == "JMPP") {
-                        toWrite.push_back("cmp EAX, 0\nJG " + entradaSubstrings[1]);
-                    } else if(str == "JMPZ") {
-                        toWrite.push_back("cmp EAX, 0\nJE " + entradaSubstrings[1]);
+                        convertido += "sub EAX, [" + *it;
+                        if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2; //mover ponteiro para deslocamento
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
+                        } else {
+                            convertido += "]";
+                        }
+                    } else if (str == "COPY") {
+                        convertido += "mov EBX, [" + *it;
+                        if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2; //mover ponteiro para deslocamento
+                            (*it).pop_back(); //remove virgula
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
+                        } else {
+                            convertido.pop_back();
+                            convertido += "]";
+                        }
+                        it++;
+                        convertido += "\nmov [" + *it;
+                        if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2; //mover ponteiro para deslocamento
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
+                        } else {
+                            convertido += "]";
+                        }
+                        convertido += ", EBX";
+                    } else if (str == "LOAD") {
+                        convertido += "mov EAX, [" + *it;
+                        if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2; //mover ponteiro para deslocamento
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
+                        } else {
+                            convertido += "]";
+                        }
+                    } else if (str == "STORE") {
+                        convertido += "mov [" + *it ;
+                        if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2; //mover ponteiro para deslocamento
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
+                        } else {
+                            convertido += "]";
+                        }
+                        convertido += ", EAX";
+                    } else if (str == "STOP") {
+                        convertido += "mov EAX, 1\nmov EBX, 0\nint 80H";
+                    } else if (str == "JMP") {
+                        convertido += "jmp " + *it;
+                    } else if (str == "JMPN") {
+                        convertido += "cmp EAX, 0\njl " + *it;
+                    } else if (str == "JMPP") {
+                        convertido += "cmp EAX, 0\njg " + *it;
+                    } else if (str == "JMPZ") {
+                        convertido += "cmp EAX, 0\nje " + *it;
+                    } else if (str == "DIV") {
+                        convertido += "cdq\nidiv [" + *it;
+                        if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2; //mover ponteiro para deslocamento
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
+                        } else {
+                            convertido += "]";
+                        }
+                    } else if (str == "MULT") {
+                        convertido += "imul [" + *it;
+                        if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2; //mover ponteiro para deslocamento
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
+                        } else {
+                            convertido += "]";
+                        }
+                        convertido += "\njo _overflow";
                     } else {
-                        toWrite.push_back(";Ainda não traduzi isso aqui");
+                        convertido += ";Ainda não traduzi isso aqui";
                     }
 
-                } else if(eDiretiva(str)) {
+                    toWrite.push_back(convertido);
+
+                } else if (eDiretiva(str)) {
                     //tratamento de diretivas
 
-                    if(str.compare("IF") == 0) {
+                    if (str.compare("IF") == 0) {
                         encontrouIf = true;
                         
-                        if(encontrouLabel) {
+                        if (encontrouLabel) {
                             toWrite.push_back(ultimaLabel);
                             encontrouLabel = false;
                         }
@@ -272,18 +338,18 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                         string toCheck = entradaSubstrings[1];
 
                         ifVerdadeiro = (stoi(toCheck) != 0);
-                    } else if(str.compare("MACRO") == 0) {
-                        if(!encontrouLabel) {
+                    } else if (str.compare("MACRO") == 0) {
+                        if (!encontrouLabel) {
                             cout << "Erro! Macro sem rótulo!" << endl;
                             arquivoEntrada.seekg(pos);
                             return -1;
                         }
-                        if(tam > 1) {
+                        if (tam > 1) {
                             string args;
                             for(int i = 1; i < tam; i++) {
                                 string arg = entradaSubstrings[i];
 
-                                if(arg.front() != '&') {
+                                if (arg.front() != '&') {
                                     cout << "Erro! Argumento de macro não iniciado por \'&\'!" << endl;
                                     arquivoEntrada.seekg(pos);
                                     return -1;
@@ -291,15 +357,15 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                                 string varNum = "#";
                                 varNum.append(to_string(i));
 
-                                if(arg.back() == ',') {
-                                    if(i != tam - 1)
+                                if (arg.back() == ',') {
+                                    if (i != tam - 1)
                                         arg.pop_back();
                                     else {
                                         cout << "Erro! Argumento final acabado em \',\'!" << endl;
                                     }
                                 }
                                 
-                                if(arg.compare("&") == 0) {
+                                if (arg.compare("&") == 0) {
                                     cout << "Erro! Argumento de macro vazio!" << endl;
                                     arquivoEntrada.seekg(pos);
                                     return -1;
@@ -308,7 +374,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                                 args.append(varNum).push_back(SPACE);
                             }
 
-                            if(!args.empty()) {
+                            if (!args.empty()) {
                                 args.pop_back();
                             }
                             macros[ultimaLabel].push_back(args);
@@ -324,25 +390,25 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                         vector<string>& macroLbls = macroLabels[ultimaLabel];
                         arquivoEntrada.seekg(pos);
 
-                        if(mapeiaMacro(arquivoEntrada, macroCorpo, macroLbls, instrucoes, diretivas) != 0)
+                        if (mapeiaMacro(arquivoEntrada, macroCorpo, macroLbls, instrucoes, diretivas) != 0)
                             return -1;
 
                         macroArgs.clear();
-                    } else if(str.compare("SECTION") == 0){
+                    } else if (str.compare("SECTION") == 0){
 
-                        if(find(entradaSubstrings.begin(), entradaSubstrings.end(), "DATA") != entradaSubstrings.end()) {
+                        if (find(entradaSubstrings.begin(), entradaSubstrings.end(), "DATA") != entradaSubstrings.end()) {
                             contemData = true;
                             break;
                         }
                     }
-                } else if(macros.find(str) != macros.end()) {
+                } else if (macros.find(str) != macros.end()) {
                     //expansão de macros
 
                     vector<string> args = substrings(macros[str][0]);
                     int numArgs = args.size();
                     ++contadorMacros;
 
-                    if(tam != numArgs + 1) {
+                    if (tam != numArgs + 1) {
                         cout << "Tam = " << tam << " numArgs + 1 = " << numArgs + 1 << endl;
                         cout << "Erro! Chamada da macro " << str << " com número incorreto de argumentos!";
                         arquivoEntrada.seekg(pos);
@@ -351,7 +417,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                     
                     for(int i = 0; i < numArgs; i++) {
                         string variavel = entradaSubstrings[i + 1];
-                        if(variavel.back() == ',')
+                        if (variavel.back() == ',')
                             variavel.pop_back();
 
                         macroArgs[args[i]] = variavel;
@@ -361,7 +427,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                     int tamMacro = macroAtual.size();
                     vector<string> macroLbls = macroLabels[str];
 
-                    if(encontrouLabel) {
+                    if (encontrouLabel) {
                         ultimaLabel.push_back(':');
                         toWrite.push_back(ultimaLabel);
                         encontrouLabel = false;
@@ -375,25 +441,25 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                             if (umaString.front() == '#') {
                                 string aux;
 
-                                if(umaString.back() == ',') {
+                                if (umaString.back() == ',') {
                                     umaString.pop_back();
                                     temVirgula = true;
                                 }
 
                                 aux = macroArgs[umaString];
 
-                                if(temVirgula) {
+                                if (temVirgula) {
                                     aux.push_back(',');
                                     temVirgula = false;
                                 }
 
-                                if(aux.front() == '&') {
+                                if (aux.front() == '&') {
                                     aux.erase(aux.begin());
                                 }
 
                                 toWrite.push_back(aux);
 
-                            } else if(umaString.back() == ':') {
+                            } else if (umaString.back() == ':') {
                                 umaString.pop_back();
                                 umaString.push_back('_');
                                 umaString.append(str);
@@ -401,7 +467,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                                 umaString.push_back(':');
 
                                 toWrite.push_back(umaString);
-                            } else if(find(macroLbls.begin(), macroLbls.end(), umaString) != macroLbls.end()) {
+                            } else if (find(macroLbls.begin(), macroLbls.end(), umaString) != macroLbls.end()) {
                                 umaString.push_back('_');
                                 umaString.append(str);
                                 umaString.append(to_string(contadorMacros));
@@ -413,7 +479,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                             }
                         }
 
-                        if(!toWrite.empty()) {
+                        if (!toWrite.empty()) {
                             putLine(arquivoSaida, toWrite);
                             toWrite.clear();
                         }
@@ -426,7 +492,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                     }
                 }
 
-                if(!toWrite.empty()) {
+                if (!toWrite.empty()) {
                     putLine(arquivoSaida, toWrite);
                     toWrite.clear();
                 }
@@ -434,7 +500,18 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
         }
     } while(!(arquivoEntrada.eof() || arquivoEntrada.bad()));
 
-    if(contemData) {
+    toWrite.push_back("jmp _fim\n_overflow:\nmov EAX 1\nmov EBX 1\nmov ECX _msgOvf\nmov EDX _tamMsgOvf\nmov EAX, 1\nmov EBX, 0\nint 80H\n_fim:");
+    putLine(arquivoSaida, toWrite);
+    toWrite.clear();
+
+    toWrite.push_back("section .data\n_msgOvf: db \'Ocorreu overflow!\'\n_tamMsgOvf: equ $-_msgOvf");
+    putLine(arquivoSaida, toWrite);
+    toWrite.clear();
+
+    secao = DATA;
+    escreveuSecao = true;
+
+    if (contemData) {
         encontrouLabel = false;
         encontrouIf = false;
         ifVerdadeiro = false;
@@ -447,18 +524,18 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
 
             tam = entradaSubstrings.size();
 
-            if(tam > 0) {
+            if (tam > 0) {
                 for(int i = 0; i < tam; i++) {
                     string s = entradaSubstrings[i];
-                    if(equs.find(s) != equs.end())
+                    if (equs.find(s) != equs.end())
                         entradaSubstrings[i] = equs[s];
                 }
             }
 
-            if(tam > 0) {
+            if (tam > 0) {
                 string str = entradaSubstrings[0];
                 //linha com label
-                if(str.back() == ':') {
+                if (str.back() == ':') {
 
                     str.pop_back();
 
@@ -469,26 +546,26 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                     entradaSubstrings.erase(entradaSubstrings.begin());
                 }
 
-                if(tam > 0) {
+                if (tam > 0) {
                     string str;
 
-                    if(!encontrouIf || ifVerdadeiro) {
+                    if (!encontrouIf || ifVerdadeiro) {
                         str = entradaSubstrings[0];
                     } else {
                         str = "";
                     }
                     encontrouIf = false;
 
-                    if(eDiretiva(str)) {
+                    if (eDiretiva(str)) {
 
-                        if(str.compare("SECTION") == 0) {
+                        if (str.compare("SECTION") == 0) {
                             cout << "Erro! Diretiva SECTION dentro da seção de dados!" << endl;
                             return -1;
                         }
-                        if(str.compare("IF") == 0) {
+                        if (str.compare("IF") == 0) {
                             encontrouIf = true;
                             
-                            if(encontrouLabel) {
+                            if (encontrouLabel) {
                                 toWrite.push_back(ultimaLabel);
                                 encontrouLabel = false;
                             }
@@ -500,46 +577,46 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
 
                             string s = entradaSubstrings[0];
 
-                            if(s.compare("SPACE") == 0 && secao != BSS) {
+                            if (s.compare("SPACE") == 0 && secao != BSS) {
                                 secao = BSS;
                                 escreveuSecao = false;
-                            } else if(s.compare("CONST") == 0 && secao != DATA) {
+                            } else if (s.compare("CONST") == 0 && secao != DATA) {
                                 secao = DATA;
                                 escreveuSecao = false;
                             }
 
-                            if(!escreveuSecao) {
+                            if (!escreveuSecao) {
                                 escreveuSecao = true;
-                                if(secao == BSS)
+                                if (secao == BSS)
                                     toWrite.push_back("section .bss");
                                 else
                                     toWrite.push_back("section .data");
                             }
 
-                            if(!toWrite.empty()) {
+                            if (!toWrite.empty()) {
                                 putLine(arquivoSaida, toWrite);
                                 toWrite.clear();
                             }
 
-                            if(encontrouLabel) {
+                            if (encontrouLabel) {
                                 ultimaLabel.push_back(':');
                                 toWrite.push_back(ultimaLabel);
                                 encontrouLabel = false;
                             }
             
-                            if(secao == BSS) {
+                            if (secao == BSS) {
                                 toWrite.push_back("resd");
-                                if(entradaSubstrings.size() > 2) {
+                                if (entradaSubstrings.size() > 2) {
                                     cout << "Erro! SPACE com mais de um argumento!" << endl;
                                     return -1;
                                 }
-                                if(entradaSubstrings.size() == 2)
+                                if (entradaSubstrings.size() == 2)
                                     toWrite.push_back(entradaSubstrings[1]);
                                 else
                                     toWrite.push_back("1");
                             } else {
                                 toWrite.push_back("dd");
-                                if(entradaSubstrings.size() > 2) {
+                                if (entradaSubstrings.size() > 2) {
                                     cout << "Erro! CONST com mais de um argumento!" << endl;
                                     return -1;
                                 }
@@ -551,7 +628,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
 
                 }
 
-                if(!toWrite.empty()) {
+                if (!toWrite.empty()) {
                     putLine(arquivoSaida, toWrite);
                     toWrite.clear();
                 }
@@ -575,18 +652,18 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<stri
         linhaEntrada = toupperStr(getLineModificado(arquivoEntrada));
         entradaSubstrings = substrings(linhaEntrada);
 
-        if(arquivoEntrada.eof() || arquivoEntrada.bad()) {
+        if (arquivoEntrada.eof() || arquivoEntrada.bad()) {
             cout << "Erro! Diretiva ENDMACRO não encontrada!" << endl;
             return -1;
         }
         int tam = entradaSubstrings.size();
 
-        if(tam > 0) {
+        if (tam > 0) {
             string str = entradaSubstrings[0];
             string linha = "";
 
             //linha com label
-            if(str.back() == ':') {
+            if (str.back() == ':') {
                 encontrouLabel = true;
                 ultimaLabel = str;
                 tam--;
@@ -595,19 +672,19 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<stri
                 macroLbls.push_back(str);
             }
 
-            if(tam > 0) {
+            if (tam > 0) {
                 string str = entradaSubstrings[0];
 
-                if(encontrouIf && !ifVerdadeiro) {
+                if (encontrouIf && !ifVerdadeiro) {
                     encontrouIf = false;
                     encontrouLabel = false;
                     continue;
                 }
 
-                if(eInstrucao(str)) {
+                if (eInstrucao(str)) {
                     //tratamento de instruções
 
-                    if(encontrouLabel) {
+                    if (encontrouLabel) {
                         linha.append(ultimaLabel + SPACE);
                         encontrouLabel = false;
                     }
@@ -617,48 +694,48 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<stri
                         string aux = s;
                         bool comVirgula = false;
 
-                        if(s.back() == ',') {
+                        if (s.back() == ',') {
                             comVirgula = true;
                             s.pop_back();
                         }
 
-                        if(macroArgs.find(s) != macroArgs.end()) {
+                        if (macroArgs.find(s) != macroArgs.end()) {
                             aux = macroArgs[s];
-                            if(comVirgula)
+                            if (comVirgula)
                                 aux.push_back(',');
                         }
 
                         linha.append(aux);
-                        if(it != entradaSubstrings.end() - 1)
+                        if (it != entradaSubstrings.end() - 1)
                             linha.push_back(SPACE);
                     }
 
-                    if(!linha.empty())
+                    if (!linha.empty())
                         macroCorpo.push_back(linha);
 
-                } else if(eDiretiva(str)) {
+                } else if (eDiretiva(str)) {
                     //tratamento de diretivas
 
-                    if(str.compare("ENDMACRO") == 0) {
+                    if (str.compare("ENDMACRO") == 0) {
                         break;
                     }
 
-                    if(str.compare("MACRO") == 0) {
+                    if (str.compare("MACRO") == 0) {
                         cout << "Erro! Definição de macro dentro de outra definição de macro!" << endl;
                         arquivoEntrada.seekg(pos);
                         return -1;
                     }
 
-                    if(str.compare("IF") == 0) {
+                    if (str.compare("IF") == 0) {
                         encontrouIf = true;
                         
-                        if(encontrouLabel) {
+                        if (encontrouLabel) {
                             macroLbls.push_back(ultimaLabel);
                             encontrouLabel = false;
                         }
 
                         string toCheck = entradaSubstrings[1];
-                        if(equs.find(toCheck) == equs.end()) {
+                        if (equs.find(toCheck) == equs.end()) {
                             cout << "Erro! Diretiva IF com rótulo inválido!" << endl;
                             arquivoEntrada.seekg(pos);
                             return -1;
@@ -676,30 +753,30 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<stri
                         string aux = s;
                         bool comVirgula = false;
 
-                        if(s.back() == ',') {
+                        if (s.back() == ',') {
                             comVirgula = true;
                             s.pop_back();
                         }
 
-                        if(macroArgs.find(s) != macroArgs.end()) {
+                        if (macroArgs.find(s) != macroArgs.end()) {
                             aux = macroArgs[s];
-                            if(comVirgula)
+                            if (comVirgula)
                                 aux.push_back(',');
                         }
 
                         linha.append(aux);
-                        if(it != entradaSubstrings.end() - 1)
+                        if (it != entradaSubstrings.end() - 1)
                             linha.push_back(SPACE);
                     }
 
-                    if(!linha.empty())
+                    if (!linha.empty())
                         macroCorpo.push_back(linha);
                 }
             }
         }
     } while(linhaEntrada.find("ENDMACRO") == string::npos);
 
-    if(entradaSubstrings.size() != 1) {
+    if (entradaSubstrings.size() != 1) {
         cout << "Erro! Diretiva ENDMACRO deve vir sozinha na linha!" << endl;
         return -1;
     }
