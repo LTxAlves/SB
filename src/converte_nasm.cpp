@@ -240,7 +240,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
 
                     //convertendo para nasm
                     if (str == "ADD") {
-                        convertido += "add EAX, [" + *it;
+                        convertido += "add EAX, dword [" + *it;
                         if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2; //mover ponteiro para deslocamento
                             convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
@@ -248,7 +248,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                             convertido += "]";
                         }
                     } else if (str == "SUB") {
-                        convertido += "sub EAX, [" + *it;
+                        convertido += "sub EAX, dword [" + *it;
                         if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2; //mover ponteiro para deslocamento
                             convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
@@ -256,7 +256,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                             convertido += "]";
                         }
                     } else if (str == "COPY") {
-                        convertido += "mov EBX, [" + *it;
+                        convertido += "mov EBX, dword [" + *it;
                         if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2; //mover ponteiro para deslocamento
                             (*it).pop_back(); //remove virgula
@@ -266,7 +266,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                             convertido += "]";
                         }
                         it++;
-                        convertido += "\nmov [" + *it;
+                        convertido += "\nmov dword [" + *it;
                         if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2; //mover ponteiro para deslocamento
                             convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
@@ -275,7 +275,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                         }
                         convertido += ", EBX";
                     } else if (str == "LOAD") {
-                        convertido += "mov EAX, [" + *it;
+                        convertido += "mov EAX, dword [" + *it;
                         if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2; //mover ponteiro para deslocamento
                             convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
@@ -283,7 +283,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                             convertido += "]";
                         }
                     } else if (str == "STORE") {
-                        convertido += "mov [" + *it ;
+                        convertido += "mov dword [" + *it ;
                         if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2; //mover ponteiro para deslocamento
                             convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
@@ -302,7 +302,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                     } else if (str == "JMPZ") {
                         convertido += "cmp EAX, 0\nje " + *it;
                     } else if (str == "DIV") {
-                        convertido += "cdq\nidiv [" + *it;
+                        convertido += "cdq\nidiv dword [" + *it;
                         if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2; //mover ponteiro para deslocamento
                             convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
@@ -310,7 +310,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                             convertido += "]";
                         }
                     } else if (str == "MULT") {
-                        convertido += "imul [" + *it;
+                        convertido += "imul dword [" + *it;
                         if (it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2; //mover ponteiro para deslocamento
                             convertido += " + " + to_string((atoi(it->c_str()) * 4)) + "]"; //multiplica por 4, endereçamento em 32 bits/4 bytes
@@ -500,7 +500,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
         }
     } while(!(arquivoEntrada.eof() || arquivoEntrada.bad()));
 
-    toWrite.push_back("jmp _fim\n_overflow:\nmov EAX 1\nmov EBX 1\nmov ECX _msgOvf\nmov EDX _tamMsgOvf\nmov EAX, 1\nmov EBX, 0\nint 80H\n_fim:");
+    toWrite.push_back("jmp _fim\n_overflow:\nmov EAX, 1\nmov EBX, 1\nmov ECX, _msgOvf\nmov EDX, _tamMsgOvf\nmov EAX, 1\nmov EBX, 0\nint 80H\n_fim:");
     putLine(arquivoSaida, toWrite);
     toWrite.clear();
 
