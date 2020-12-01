@@ -327,14 +327,15 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                         convertido += "\ncall _LerInteiro\nadd ESP, 4";
                         convertido += "\nmov dword [_charsLidos], EAX\npush dword _charsLidos\ncall _quantChars\nadd ESP, 4\npop EAX";
                     }  else if (str == "OUTPUT") {
-                        convertido += "push dword " + *it;
+                        convertido += "push EAX\npush dword " + *it;
                         if(it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2;
                             convertido += " + " + to_string((atoi(it->c_str()) * 4));
                         }
                         convertido += "\ncall _EscreverInteiro\nadd ESP, 4";
+                        convertido += "\nmov EAX, 4\nmov EBX, 1\nmov ECX, _CRLF\nmov EDX, 2\nint 80H\npop EAX";
                     }  else if (str == "C_INPUT") {
-                        convertido += "push eax\npush dword " + *it;
+                        convertido += "push EAX\npush dword " + *it;
                         if(it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2;
                             convertido += " + " + to_string((atoi(it->c_str()) * 4));
@@ -342,12 +343,13 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                         convertido += "\ncall _LerChar\nadd ESP, 4";
                         convertido += "\nmov dword [_charsLidos], EAX\npush dword _charsLidos\ncall _quantChars\nadd ESP, 4\npop EAX";
                     }  else if (str == "C_OUTPUT") {
-                        convertido += "push dword " + *it;
+                        convertido += "push EAX\npush dword " + *it;
                         if(it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2;
                             convertido += " + " + to_string((atoi(it->c_str()) * 4));
                         }
                         convertido += "\ncall _EscreverChar\nadd ESP, 4";
+                        convertido += "\nmov EAX, 4\nmov EBX, 1\nmov ECX, _CRLF\nmov EDX, 2\nint 80H\npop EAX";
                     }  else if (str == "S_INPUT") {
                         
                         if(it->back() == ',')
@@ -371,7 +373,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                         if(it->back() == ',')
                             it->pop_back();
                         
-                        convertido += "push dword " + *it;
+                        convertido += "push EAX\npush dword " + *it;
                         if(it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
                             it += 2;
 
@@ -380,7 +382,10 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
 
                             convertido += " + " + to_string((atoi(it->c_str()) * 4));
                         }
-                        convertido += "\ncall _EscreverString\nadd ESP, 4";
+                        it++; //proximo argumento: quantidade de caracteres
+
+                        convertido += "\npush dword " + *it + "\ncall _EscreverString\nadd ESP, 8\npop EAX";
+
                     } else {
                         convertido += ";Ainda não traduzi isso aqui";
                     }
