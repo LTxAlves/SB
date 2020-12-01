@@ -22,7 +22,7 @@ using std::unordered_map;
 
 using std::fstream;
 
-static const vector<string> INST_VEC = {"ADD", "SUB", "MULT", "DIV", "JMP", "JMPN", "JMPP", "JMPZ", "COPY", "LOAD", "STORE", "INPUT", "OUTPUT", "STOP"};
+static const vector<string> INST_VEC = {"ADD", "SUB", "MULT", "DIV", "JMP", "JMPN", "JMPP", "JMPZ", "COPY", "LOAD", "STORE", "INPUT", "OUTPUT", "C_INPUT", "C_OUTPUT", "S_INPUT", "S_OUTPUT", "STOP"};
 static const vector<string> DIR_VEC = {"SECTION", "SPACE", "CONST", "EQU", "IF", "MACRO", "ENDMACRO"};
 
 bool acabaCom(string const &stringOrigem, string const &final) {

@@ -43,3 +43,9 @@ int geraConvertido(std::fstream& arquivoEntrada, std::fstream& arquivoSaida, std
  * @returns -1 se erro, 0 caso contrário
  * */
 int mapeiaMacro(std::fstream& arquivoEntrada, std::vector<std::string>& macroCorpo, std::vector<std::string>& macroLbls, std::unordered_map<std::string, Instrucao*>& instrucoes, std::unordered_map<std::string, Diretiva*>& diretivas);
+
+/**
+ * Escreve as funções de entrada e saída de dados no programa em IA-32
+ * @param arquivoSaida referência ao arquivo onde escrever
+ * */
+void funcoesIO(std::fstream& arquivoSaida);

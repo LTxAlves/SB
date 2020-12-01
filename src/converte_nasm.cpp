@@ -318,6 +318,69 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
                             convertido += "]";
                         }
                         convertido += "\njo _overflow";
+                    } else if (str == "INPUT") {
+                        convertido += "push EAX\npush dword " + *it;
+                        if(it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2;
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4));
+                        }
+                        convertido += "\ncall _LerInteiro\nadd ESP, 4";
+                        convertido += "\nmov dword [_charsLidos], EAX\npush dword _charsLidos\ncall _quantChars\nadd ESP, 4\npop EAX";
+                    }  else if (str == "OUTPUT") {
+                        convertido += "push dword " + *it;
+                        if(it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2;
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4));
+                        }
+                        convertido += "\ncall _EscreverInteiro\nadd ESP, 4";
+                    }  else if (str == "C_INPUT") {
+                        convertido += "push eax\npush dword " + *it;
+                        if(it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2;
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4));
+                        }
+                        convertido += "\ncall _LerChar\nadd ESP, 4";
+                        convertido += "\nmov dword [_charsLidos], EAX\npush dword _charsLidos\ncall _quantChars\nadd ESP, 4\npop EAX";
+                    }  else if (str == "C_OUTPUT") {
+                        convertido += "push dword " + *it;
+                        if(it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2;
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4));
+                        }
+                        convertido += "\ncall _EscreverChar\nadd ESP, 4";
+                    }  else if (str == "S_INPUT") {
+                        
+                        if(it->back() == ',')
+                            it->pop_back();
+
+                        convertido += "push EAX\npush dword " + *it;
+                        if(it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2;
+
+                            if(it->back() == ',')
+                                it->pop_back();
+
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4));
+                        }
+                        it++; //proximo argumento: quantidade de caracteres
+
+                        convertido += "\npush dword " + *it + "\ncall _LerString\nadd ESP, 8";
+                        convertido += "\nmov dword [_charsLidos], EAX\npush dword _charsLidos\ncall _quantChars\nadd ESP, 4\npop EAX";
+                    }  else if (str == "S_OUTPUT") {
+
+                        if(it->back() == ',')
+                            it->pop_back();
+                        
+                        convertido += "push dword " + *it;
+                        if(it + 1 != entradaSubstrings.end() && *(it + 1) == "+") {
+                            it += 2;
+
+                            if(it->back() == ',')
+                                it->pop_back();
+
+                            convertido += " + " + to_string((atoi(it->c_str()) * 4));
+                        }
+                        convertido += "\ncall _EscreverString\nadd ESP, 4";
                     } else {
                         convertido += ";Ainda não traduzi isso aqui";
                     }
@@ -398,6 +461,7 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
 
                         if (find(entradaSubstrings.begin(), entradaSubstrings.end(), "DATA") != entradaSubstrings.end()) {
                             contemData = true;
+                            funcoesIO(arquivoSaida);
                             break;
                         }
                     }
@@ -504,7 +568,15 @@ int geraConvertido(fstream& arquivoEntrada, fstream& arquivoSaida, unordered_map
     putLine(arquivoSaida, toWrite);
     toWrite.clear();
 
+    toWrite.push_back("section .bss\n_strAux: resb 101\n_charsLidos: resd 1");
+    putLine(arquivoSaida, toWrite);
+    toWrite.clear();
+
     toWrite.push_back("section .data\n_msgOvf: db \'Ocorreu overflow!\'\n_tamMsgOvf: equ $-_msgOvf");
+    putLine(arquivoSaida, toWrite);
+    toWrite.clear();
+
+    toWrite.push_back("_msgLeitura1: db \'Foram lidos \'\n_tam1: equ $-_msgLeitura1\n_msgLeitura2: db \' caracteres\'\n_CRLF: db 0DH, 0AH\n_tam2: equ $-_msgLeitura2\n_dez: dd 10\n_sinalMenos: db \'-\'");
     putLine(arquivoSaida, toWrite);
     toWrite.clear();
 
@@ -782,4 +854,200 @@ int mapeiaMacro(fstream& arquivoEntrada, vector<string>& macroCorpo, vector<stri
     }
 
     return 0;
+}
+
+void funcoesIO(fstream& arquivoSaida) {
+    arquivoSaida << "_LerInteiro:" << endl;
+    arquivoSaida << "enter 0, 0" << endl;
+    arquivoSaida << "push EBX" << endl;
+    arquivoSaida << "push ECX" << endl;
+    arquivoSaida << "push EDX" << endl;
+    arquivoSaida << "push ESI" << endl << endl;
+    arquivoSaida << "mov EAX, 3" << endl;
+    arquivoSaida << "mov EBX, 0" << endl;
+    arquivoSaida << "mov ECX, _strAux" << endl;
+    arquivoSaida << "mov EDX, 11" << endl;
+    arquivoSaida << "int 80H" << endl;
+    arquivoSaida << "push EAX" << endl << endl;
+    arquivoSaida << "mov EAX, dword [EBP + 8]" << endl;
+    arquivoSaida << "mov [EAX], dword 0" << endl;
+    arquivoSaida << "xor EAX, EAX" << endl;
+    arquivoSaida << "xor EBX, EBX" << endl;
+    arquivoSaida << "xor ESI, ESI" << endl;
+    arquivoSaida << "mov ECX, 10" << endl << endl;
+    arquivoSaida << "cmp byte [_strAux], 2DH" << endl;
+    arquivoSaida << "jne _loopAtoI" << endl;
+    arquivoSaida << "dec ECX" << endl;
+    arquivoSaida << "inc EBX" << endl;
+    arquivoSaida << "add ESI, 1" << endl << endl;
+    arquivoSaida << "_loopAtoI:" << endl;
+    arquivoSaida << "movsx EDX, byte [_strAux + EBX]" << endl;
+    arquivoSaida << "sub EDX, 30H" << endl;
+    arquivoSaida << "cmp EDX, 9" << endl;
+    arquivoSaida << "jg _fimLoop" << endl;
+    arquivoSaida << "cmp EDX, 0" << endl;
+    arquivoSaida << "jl _fimLoop" << endl;
+    arquivoSaida << "push EDX" << endl;
+    arquivoSaida << "mul dword [_dez]" << endl;
+    arquivoSaida << "pop EDX" << endl;
+    arquivoSaida << "add EAX, EDX" << endl;
+    arquivoSaida << "inc EBX" << endl;
+    arquivoSaida << "loop _loopAtoI" << endl;
+    arquivoSaida << "_fimLoop:" << endl << endl;
+    arquivoSaida << "cmp ESI, 1" << endl;
+    arquivoSaida << "jne _fimLerInt" << endl;
+    arquivoSaida << "neg EAX" << endl << endl;
+    arquivoSaida << "_fimLerInt:" << endl << endl;
+    arquivoSaida << "mov EDX, dword [EBP + 8]" << endl;
+    arquivoSaida << "add [EDX], EAX" << endl << endl;
+    arquivoSaida << "pop EAX" << endl;
+    arquivoSaida << "pop ESI" << endl;
+    arquivoSaida << "pop EDX" << endl;
+    arquivoSaida << "pop ECX" << endl;
+    arquivoSaida << "pop EBX" << endl;
+    arquivoSaida << "leave" << endl;
+    arquivoSaida << "ret" << endl << endl;
+    arquivoSaida << "_EscreverInteiro:" << endl;
+    arquivoSaida << "enter 0, 0" << endl;
+    arquivoSaida << "push EBX" << endl;
+    arquivoSaida << "push ECX" << endl;
+    arquivoSaida << "push EDX" << endl;
+    arquivoSaida << "push ESI" << endl << endl;
+    arquivoSaida << "mov EBX, dword [EBP + 8]" << endl;
+    arquivoSaida << "mov ECX, dword [EBX]" << endl;
+    arquivoSaida << "push EBX" << endl;
+    arquivoSaida << "cmp ECX, 0" << endl;
+    arquivoSaida << "jge _naoNegativo" << endl << endl;
+    arquivoSaida << "neg dword [EBX]" << endl << endl;
+    arquivoSaida << "mov EAX, 4" << endl;
+    arquivoSaida << "mov EBX, 1" << endl;
+    arquivoSaida << "mov ECX, _sinalMenos" << endl;
+    arquivoSaida << "mov EDX, 1" << endl;
+    arquivoSaida << "int 80H" << endl << endl;
+    arquivoSaida << "_naoNegativo:" << endl;
+    arquivoSaida << "pop EBX" << endl;
+    arquivoSaida << "mov EAX, dword [EBX]" << endl;
+    arquivoSaida << "xor ECX, ECX" << endl << endl;
+    arquivoSaida << "_loopItoA:" << endl;
+    arquivoSaida << "cdq" << endl;
+    arquivoSaida << "div dword [_dez]" << endl;
+    arquivoSaida << "add EDX, 30H" << endl;
+    arquivoSaida << "push DX" << endl;
+    arquivoSaida << "inc ECX" << endl;
+    arquivoSaida << "_fimLoopItoA:" << endl;
+    arquivoSaida << "cmp EAX, 0" << endl;
+    arquivoSaida << "jne _loopItoA" << endl << endl;
+    arquivoSaida << "_desempilhaChars:" << endl;
+    arquivoSaida << "pop DX" << endl;
+    arquivoSaida << "mov byte [_strAux + EAX], DL" << endl;
+    arquivoSaida << "inc EAX" << endl;
+    arquivoSaida << "cmp EAX, ECX" << endl;
+    arquivoSaida << "jne _desempilhaChars" << endl << endl;
+    arquivoSaida << "push dword _strAux" << endl;
+    arquivoSaida << "push ECX" << endl;
+    arquivoSaida << "call _EscreverString" << endl;
+    arquivoSaida << "add ESP, 8" << endl << endl;
+    arquivoSaida << "_fimEscreverInt:" << endl;
+    arquivoSaida << "pop ESI" << endl;
+    arquivoSaida << "pop EDX" << endl;
+    arquivoSaida << "pop ECX" << endl;
+    arquivoSaida << "pop EBX" << endl;
+    arquivoSaida << "leave" << endl;
+    arquivoSaida << "ret" << endl << endl;
+    arquivoSaida << "_LerChar:" << endl;
+    arquivoSaida << "enter 0, 0" << endl;
+    arquivoSaida << "push EBX" << endl;
+    arquivoSaida << "push ECX" << endl;
+    arquivoSaida << "push EDX" << endl << endl;
+    arquivoSaida << "mov EAX, 3" << endl;
+    arquivoSaida << "mov EBX, 0" << endl;
+    arquivoSaida << "mov ECX, _strAux" << endl;
+    arquivoSaida << "mov EDX, 2" << endl;
+    arquivoSaida << "int 80H" << endl;
+    arquivoSaida << "push EAX" << endl << endl;
+    arquivoSaida << "movzx EBX, byte [_strAux]" << endl;
+    arquivoSaida << "mov ECX, dword [EBP + 8]" << endl;
+    arquivoSaida << "mov dword [ECX], EBX" << endl << endl;
+    arquivoSaida << "pop EAX" << endl;
+    arquivoSaida << "pop EDX" << endl;
+    arquivoSaida << "pop ECX" << endl;
+    arquivoSaida << "pop EBX" << endl << endl;
+    arquivoSaida << "leave" << endl;
+    arquivoSaida << "ret" << endl << endl;
+    arquivoSaida << "_EscreverChar:" << endl;
+    arquivoSaida << "enter 0, 0" << endl;
+    arquivoSaida << "push EBX" << endl;
+    arquivoSaida << "push ECX" << endl;
+    arquivoSaida << "push EDX" << endl;
+    arquivoSaida << "push ESI" << endl << endl;
+    arquivoSaida << "mov EAX, 4" << endl;
+    arquivoSaida << "mov EBX, 1" << endl;
+    arquivoSaida << "mov ECX, dword [EBP + 8]" << endl;
+    arquivoSaida << "mov EDX, 1" << endl;
+    arquivoSaida << "int 80H" << endl;
+    arquivoSaida << "push EAX" << endl << endl;
+    arquivoSaida << "pop EAX" << endl;
+    arquivoSaida << "pop ESI" << endl;
+    arquivoSaida << "pop EDX" << endl;
+    arquivoSaida << "pop ECX" << endl;
+    arquivoSaida << "pop EBX" << endl << endl;
+    arquivoSaida << "leave" << endl;
+    arquivoSaida << "ret" << endl << endl;
+    arquivoSaida << "_LerString:" << endl;
+    arquivoSaida << "enter 0, 0" << endl;
+    arquivoSaida << "push EBX" << endl;
+    arquivoSaida << "push ECX" << endl;
+    arquivoSaida << "push EDX" << endl << endl;
+    arquivoSaida << "mov EAX, 3" << endl;
+    arquivoSaida << "mov EBX, 0" << endl;
+    arquivoSaida << "mov ECX, [EBP + 12]" << endl;
+    arquivoSaida << "mov EDX, [EBP + 8]" << endl;
+    arquivoSaida << "int 80H" << endl << endl;
+    arquivoSaida << "pop EDX" << endl;
+    arquivoSaida << "pop ECX" << endl;
+    arquivoSaida << "pop EBX" << endl << endl;
+    arquivoSaida << "leave" << endl;
+    arquivoSaida << "ret" << endl << endl;
+    arquivoSaida << "_EscreverString:" << endl;
+    arquivoSaida << "enter 0, 0" << endl;
+    arquivoSaida << "push EBX" << endl;
+    arquivoSaida << "push ECX" << endl;
+    arquivoSaida << "push EDX" << endl;
+    arquivoSaida << "push ESI" << endl << endl;
+    arquivoSaida << "mov EAX, 4" << endl;
+    arquivoSaida << "mov EBX, 1" << endl;
+    arquivoSaida << "mov ECX, dword [EBP + 12]" << endl;
+    arquivoSaida << "mov EDX, dword [EBP + 8]" << endl;
+    arquivoSaida << "int 80H" << endl << endl;
+    arquivoSaida << "pop ESI" << endl;
+    arquivoSaida << "pop EDX" << endl;
+    arquivoSaida << "pop ECX" << endl;
+    arquivoSaida << "pop EBX" << endl << endl;
+    arquivoSaida << "leave" << endl;
+    arquivoSaida << "ret" << endl << endl;
+    arquivoSaida << "_quantChars:" << endl;
+    arquivoSaida << "enter 0, 0" << endl;
+    arquivoSaida << "push EAX" << endl;
+    arquivoSaida << "push EBX" << endl;
+    arquivoSaida << "push ECX" << endl;
+    arquivoSaida << "push EDX" << endl << endl;
+    arquivoSaida << "mov EAX, 4" << endl;
+    arquivoSaida << "mov EBX, 1" << endl;
+    arquivoSaida << "mov ECX, _msgLeitura1" << endl;
+    arquivoSaida << "mov EDX, _tam1" << endl;
+    arquivoSaida << "int 80H" << endl << endl;
+    arquivoSaida << "push dword [EBP + 8]" << endl;
+    arquivoSaida << "call _EscreverInteiro" << endl;
+    arquivoSaida << "add ESP, 4" << endl << endl;
+    arquivoSaida << "mov EAX, 4" << endl;
+    arquivoSaida << "mov EBX, 1" << endl;
+    arquivoSaida << "mov ECX, _msgLeitura2" << endl;
+    arquivoSaida << "mov EDX, _tam2" << endl;
+    arquivoSaida << "int 80H" << endl << endl;
+    arquivoSaida << "pop EDX" << endl;
+    arquivoSaida << "pop ECX" << endl;
+    arquivoSaida << "pop EBX" << endl;
+    arquivoSaida << "pop EAX" << endl << endl;
+    arquivoSaida << "leave" << endl;
+    arquivoSaida << "ret" << endl;
 }
