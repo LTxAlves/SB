@@ -1,7 +1,7 @@
-# Trabalho 1 - Software Básico
+# Trabalho 2 - Software Básico
 
 ## Índice
-- [Trabalho 1 - Software Básico](#trabalho-1---software-básico)
+- [Trabalho 2 - Software Básico](#trabalho-2---software-básico)
   - [Índice](#índice)
   - [Autor](#autor)
   - [Antes de iniciar](#antes-de-iniciar)
@@ -26,10 +26,7 @@ Recomenda-se o uso de um visualizador de markdown para a leitura deste documento
 
 ## Escolha de projeto
 
-* Entre as opções de projeto disponíveis (detecção de erros ou tratamento de macros), foi optado realizar o tratamento de macros.
-* Não há limitação na quantidade de macros ou de argumentos para cada macro do arquivo de entrada.
-* Ao criar rótulos dentro de uma macro, estes serão substituídos a cada chamda da macro
-  * A substituição ocorre da seguinte forma: Supondo um rótulo `rot:` dentro da macro `umamacro: macro &arg`, o pré-processamento irá gerar o rótulo `ROT_UMAMACRO#` onde `#` é o número correspondente ao contador de chamadas de macro, permitindo que uma mesma macro seja chamada diversas vezes
+* Foi extendido a 10 caracteres o máximo de caracteres de entrada da função INPUT para comportar números maiores
 
 ## Começando
 
@@ -42,6 +39,8 @@ Para utilização do projeto, você vai precisar dos seguintes:
 * c++ (versão 11 ou superior)
 * g++
 * make
+* nasm
+* ld
 
 ### Instalando
 
@@ -54,6 +53,7 @@ Para utilização do projeto, você vai precisar dos seguintes:
 ### Instalando pré-requisitos em sistema operacional Windows ou macOS
 
 * Programa ainda não testado em/produzido para Windows ou macOS
+  * A tradução foi feita de maneira em que interrupções em IA-32 são voltadas a sistemas operacionais Linux, sem garantia de funcionamento correto em Windows ou MacOS
 
 ## Executando o programa
 
@@ -63,32 +63,29 @@ Para utilização do projeto, você vai precisar dos seguintes:
    1. Navegue até o a pasta com o arquivo `Makefile`
    2. Digite o comando `make release`
    3. Aguarde a compilação do código
-   4. Utilize o executável `./montador -p arquivo_de_entrada.asm` mudando o nome do arquivo de entrada para o nome utilizado por você (podendo utilizar caminho relativo a ele, isto é, `../arquivo.asm` levaria ao diretório superior, ou o caminho absoluto, como `/home/username/Documents/arquivo.asm`)
-       - Ao finalizar o pré-processamento, será gerado um arquivo com nome igual no mesmo diretório do arquivo de entrada, desta vez com extensão `.pre`
-   5. Para realizar a montagem, utilize o comando `./montador -o arquivo_de_entrada.pre`, sendo `arquivo_de_entrada.pre` o arquivo pré-processado gerado pelo passo 4
-       - Ao finalizar a montagem, será gerado um arquivo de mesmo nome e no mesmo diretório que o arquivo pré-processado, desta vez com extensão `.obj`
+   4. Utilize o executável `./tradutor arquivo_de_entrada.asm` mudando o nome do arquivo de entrada para o nome utilizado por você (podendo utilizar caminho relativo a ele, isto é, `../arquivo.asm` levaria ao diretório superior, ou o caminho absoluto, como `/home/username/Documents/arquivo.asm`)
+       - Ao finalizar, será gerado um arquivo em Assembly IA-32 com o mesmo nome do arquivo de entrada e extensão `.s`
+   5. Para executar o programa traduzido, navegue até seu local de criação e utilize os comandos
+       - `nasm -f elf arquivo.s -o arquivo.o`
+       - `ld [-m elf_i386] arquivo.o -o executavel` (a parte entre colchetes deve ser utilizada apenas se seu computador tiver arquitetura de 64 bits)
 
 ### Limitações
 
-1. Como foi escolhido o tratamento de macros, o programa não foi devidamente preparado para tratar erros léxicos ou de sintaxe/semântica
-   - Alguns erros (relativos a diretivas MACRO, EQU e IF) são detectados durante o pré-processamento, impedindo a continuação do programa
-   - Alguns erros são identificados durante a montagem, porém o programa para a execução caso encontre algum erro, mostrando apenas o primeiro erro encontrado.
-2. Instruções e diretivas com recebimento de argumentos no arquivo em pseudo assembly de entrada, conforme definido nas instruções para o trabalho, devem vir devidamente separadas (isto é, ao menos um espaço ou tabulação entre elas e sem espaços em branco antes da vírgula)
-   - Exemplo 1: `COPY L1,L2` ou `COPY L1 ,L2` estão incorretos, enquanto `COPY L1, L2` ou `COPY L1,`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`L2` estão corretos.
-   - Exemplo 2: `LABEL: MACRO &A,&B` ou `LABEL: MACRO &A ,&B` estão incorretos, enquanto `LABEL: MACRO &A, &B` ou `LABEL: MACRO &A,`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`&B` estão corretos.
-     - O mesmo vale para a chamada da macro: `LABEL A, B` é aceito, mas `LABEL A,B` não
-3. Conforme na definição do trabalho, o programa não diferencia maiúsculas de minúsculas, isto é, `Label:`, `LABEL:`, `label:`, `LaBeL:` ou variações são considerados rótulos iguais. O mesmo vale para instruções e diretivas.
-4. Alguma lmitações se devem às especificações do trabalho ou à escolha devido à falta de especificações a respeito das questões:
+1. Instruções e diretivas com recebimento de argumentos no arquivo em pseudo assembly de entrada, conforme definido nas instruções para o trabalho, devem vir devidamente separadas (isto é, ao menos um espaço ou tabulação entre elas e sem espaços em branco antes da vírgula)
+   - Exemplo 1: `COPY L1,L2` e `COPY L1 ,L2` estão incorretos, enquanto `COPY L1, L2` e `COPY L1,`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`L2` estão corretos.
+   - Exemplo 2: `S_INPUT LABEL,100` e `S_INPUT LABEL ,100` estão incorretos, enquanto `S_INPUT LABEL, 100` e `S_INPUT LABEL,`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`100` estão corretos
+2. Conforme na definição do trabalho, o programa não diferencia maiúsculas de minúsculas, isto é, `Label:`, `LABEL:`, `label:`, `LaBeL:` ou variações são considerados rótulos iguais. O mesmo vale para instruções e diretivas.
+3. Alguma lmitações se devem às especificações do trabalho ou à escolha devido à falta de especificações a respeito das questões:
     - Diretivas do tipo IF e a linha seguinte as diretivas IF não podem possuir rótulos, de forma a não haver referências à linhas possivelmente deletadas durante pré-processamento
     - A quebra de linha (LF, CR ou CRLF) é considerada como o separador de instruções. Sendo assim, cada instrução/diretiva deve vir em uma linha sem outras instruções/diretivas e com todos os seus operandos
-    - Macros não podem conter chamdas a outras macros dentro do seu corpo
-    - Macros não podem conter definições de outras macros dentro do seu corpo
+4. Conforme definição do trabalho, espera-se que não haja erros ou macros no arquivo de entrada
 
 ## Feito com
 
 * [C++](https://www.cplusplus.com/)
 * [gcc](https://gcc.gnu.org/)
 * [make](https://www.gnu.org/software/make/manual/make.html)
+* [nasm](https://www.nasm.us/)
 
 ## Reconhecimentos
 
