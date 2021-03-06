@@ -5,7 +5,6 @@
   - [Índice](#índice)
   - [Autor](#autor)
   - [Antes de iniciar](#antes-de-iniciar)
-  - [Escolha de projeto](#escolha-de-projeto)
   - [Começando](#começando)
     - [Pré-requisitos](#pré-requisitos)
     - [Instalando](#instalando)
@@ -23,10 +22,6 @@
 ## Antes de iniciar
 
 Recomenda-se o uso de um visualizador de markdown para a leitura deste documento. Exemplo: [Markdown Live Preview](https://markdownlivepreview.com/)
-
-## Escolha de projeto
-
-* Foi extendido a 10 caracteres o máximo de caracteres de entrada da função INPUT para comportar números maiores
 
 ## Começando
 
@@ -78,7 +73,9 @@ Para utilização do projeto, você vai precisar dos seguintes:
 3. Alguma lmitações se devem às especificações do trabalho ou à escolha devido à falta de especificações a respeito das questões:
     - Diretivas do tipo IF e a linha seguinte as diretivas IF não podem possuir rótulos, de forma a não haver referências à linhas possivelmente deletadas durante pré-processamento
     - A quebra de linha (LF, CR ou CRLF) é considerada como o separador de instruções. Sendo assim, cada instrução/diretiva deve vir em uma linha sem outras instruções/diretivas e com todos os seus operandos
-4. Conforme definição do trabalho, espera-se que não haja erros ou macros no arquivo de entrada
+4. Conforme definição do trabalho, espera-se que não haja erros ou macros no arquivo de entrada;
+5. A função de Leitura de inteiros limita a 3 dígitos de entrada, isto é, números de -999 a 999
+   - Dígitos após o terceiro são ignorados (por exemplo: 6316 vira 631 e -9876 vira -987)
 
 ## Feito com
 
